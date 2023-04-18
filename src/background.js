@@ -13,6 +13,10 @@ async function createWindow() {
   const win = new BrowserWindow({
     width: 800,
     height: 600,
+    transparent: true,
+    backgroundColor: '#00000000',
+    frame: false,
+    resizable: false,
     webPreferences: {
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION
