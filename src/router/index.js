@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import mainPage from '@/pages/index'
-import loginPage from '@/pages/login'
+import mainPage from '@/pages/mainPage/mainPage'
 
 const routes = [{
     path: "/",
@@ -11,11 +10,6 @@ const routes = [{
     path: "/mainPage",
     component: mainPage,
     meta: { title: '首页' }
-},
-{
-    path: "/login",
-    component: loginPage,
-    meta: { title: '登录' }
 }
 ]
 const router = createRouter({
