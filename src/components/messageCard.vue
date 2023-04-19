@@ -1,18 +1,22 @@
 <template>
-  <div class="cardBox">
+  <div :class="['cardBox', msg.author == 'AI' ? 'AICard' : '']">
     <div class="avatarBox">
-      <el-avatar class="avatar" :icon="UserFilled" />
+      <el-avatar
+        class="avatar"
+        :src="msg.author == 'AI' ? gptLogo : ''"
+        :icon="msg.author == 'User' ? UserFilled : ''"
+      />
     </div>
     <div class="textBox">
       <v-md-preview :text="msg.text"></v-md-preview>
     </div>
-    <!-- <el-divider style="display:inline" /> -->
   </div>
 </template>
 
 <script setup>
 import { UserFilled } from "@element-plus/icons-vue";
 import { defineProps } from "vue";
+import gptLogo from "@/assets/img/chatgpt_logo.png";
 defineProps({
   msg: Object,
 });
@@ -31,11 +35,12 @@ defineProps({
 }
 .cardBox {
   width: 100%;
-  /* min-height: 100px; */
   background-color: white;
   display: flex;
-  padding-bottom: 40px;
-  /* border-bottom: 1px solid #ccc; */
-  margin-top: 10px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #ccc;
+}
+.AICard {
+  background-color: #f7f7f8;
 }
 </style>

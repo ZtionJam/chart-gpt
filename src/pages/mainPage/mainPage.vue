@@ -1,29 +1,35 @@
 <template>
   <div>
     <top-frame :title="title" style="height: 30px" />
-    <div class="msgBox">
-      <messageCard :msg="{text:'介绍一下vue'}" />
-      <messageCard :msg="msg" />
+    <div class="msgBox" id="msgBox">
+      <messageCard v-for="(data, key) in msgs" :key="key" :msg="data" />
     </div>
 
     <el-input
-      v-model="textarea"
+      v-model="question"
       :autosize="{ minRows: 2, maxRows: 4 }"
       type="textarea"
       placeholder="输入你的问题，Shift+Enter快捷发送"
       class="input"
     />
-    <el-button color="#10A37F" class="send" :icon="Promotion" circle />
+    <el-button
+      @click="send"
+      color="#10A37F"
+      class="send"
+      :icon="Promotion"
+      circle
+    />
   </div>
 </template>
 
 <script setup>
 import topFrame from "@/components/topFrame.vue";
 import messageCard from "@/components/messageCard.vue";
-import { ref } from "vue";
+import { ref, nextTick } from "vue";
 import { Promotion } from "@element-plus/icons-vue";
+import { ElMessage } from 'element-plus'
 let title = "首页";
-let textarea = ref("");
+let question = ref("");
 let text = `<img class="size-medium" src="https://fc1tn.baidu.com/it/u=391681853,3049701464&amp;fm=202&amp;mola=new&amp;crop=v1" width="300" height="185" />
 <h2 class="md-end-block md-heading"><span class="md-plain md-expand">Vue</span></h2>
 <h3 class="md-end-block md-heading"><span class="md-plain">1. 库和框架</span></h3>
@@ -46,10 +52,38 @@ let text = `<img class="size-medium" src="https://fc1tn.baidu.com/it/u=391681853
 </ol>
 <h3 class="md-end-block md-heading"><span class="md-plain">3. Vue2.x</span></h3>
 <p class="md-end-block md-p"><span class="md-plain md-expand">Vue3.0 在 2020.09 发布正式版，现阶段我们的学习以 Vue2.x 为主。</span></p>`;
-let msg = ref({
-  text: text,
-  auth:'AI'
-});
+let msgs = ref([
+  {
+    text: "介绍一下Vue",
+    author: "User",
+  },
+  {
+    text: text,
+    author: "AI",
+  },
+  {
+    text: "好的感谢",
+    author: "User",
+  },
+]);
+const send = () => {
+  if (question.value.length < 1) {
+    ElMessage({
+      message: "说点什么吧~",
+      type: "warning",
+    });
+    return;
+  }
+  let msg = {
+    text: question.value,
+    author: "User",
+  };
+  msgs.value.push(msg);
+  nextTick(() => {
+    let container = document.getElementById("msgBox");
+    container.scrollTop = container.scrollHeight;
+  });
+};
 </script>
 
 <style>
@@ -58,11 +92,10 @@ let msg = ref({
   background-color: #f5f5f5;
 }
 .msgBox {
-  height: 550px;
+  height: 520px;
   margin: 0px auto;
   padding-top: 5px;
   overflow: auto;
-  /* border: 1px solid red; */
 }
 .send {
   width: 40px;
@@ -76,9 +109,12 @@ let msg = ref({
   position: fixed;
   bottom: 30px;
   left: 60px;
+  box-shadow: 0 0px 10px rgba(11, 11, 11, 0.3);
+  border-radius: 10px;
 }
 textarea {
   overflow: hidden;
   resize: none !important;
+  border-radius: 10px;
 }
 </style>

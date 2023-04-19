@@ -22,14 +22,6 @@ async function createWindow() {
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION
     }
   })
-
-  if (process.env.WEBPACK_DEV_SERVER_URL) {
-    await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
-    if (!process.env.IS_TEST) win.webContents.openDevTools()
-  } else {
-    createProtocol('app')
-    win.loadURL('app://./index.html')
-  }
   //平台信息
   ipcMain.on('process', (e) => {
     e.sender.send('process', process.platform)
@@ -43,6 +35,13 @@ async function createWindow() {
     win.close();
     app.exit()
   })
+  if (process.env.WEBPACK_DEV_SERVER_URL) {
+    await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
+    if (!process.env.IS_TEST) win.webContents.openDevTools()
+  } else {
+    createProtocol('app')
+    win.loadURL('app://./index.html')
+  }
 }
 
 app.on('window-all-closed', () => {

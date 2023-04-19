@@ -17,17 +17,21 @@
 </template>
 
 <script setup>
-import { defineProps, ref } from "vue";
+import { defineProps, ref, onMounted } from "vue";
 import { ipcRenderer } from "electron";
 defineProps({
   title: String,
 });
 let isMac = ref(true);
-ipcRenderer.send("process", "process");
-ipcRenderer.on("process", (e, process) => {
-  console.log("系统:" + process);
-  isMac.value = process == "darwin";
+onMounted(async () => {
+  console.log("通知主进程");
+  await ipcRenderer.send("process", "process");
+  ipcRenderer.on("process", (e, process) => {
+    console.log("系统:" + process);
+    isMac.value = process == "darwin";
+  });
 });
+
 function op(msg) {
   console.log(msg);
   ipcRenderer.send(msg, msg);
@@ -49,7 +53,7 @@ function op(msg) {
   height: 30px;
 }
 #sbcBar > div:hover {
-  background-color: #20C89F;
+  background-color: #20c89f;
   cursor: pointer;
 }
 #sbcBar > div > img {
@@ -70,7 +74,7 @@ function op(msg) {
 #frame {
   width: 98vw;
   height: 30px;
-  background-color: #10A37F;
+  background-color: #10a37f;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
   user-select: none;
