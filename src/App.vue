@@ -19,7 +19,10 @@ export default {
   height: 98vh;
   margin: 0 auto;
   box-shadow: 1px 1px 10px grey;
-  background-color: #ccc;
+  background-color: #f7f7f8;
   border-radius: 10px;
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 </style>

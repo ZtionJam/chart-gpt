@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, protocol, BrowserWindow } from 'electron'
+import { app, protocol, BrowserWindow, ipcMain } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
@@ -25,13 +25,25 @@ async function createWindow() {
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
-    if (!process.env.IS_TEST) win.webContents.openDevTools()
+    // if (!process.env.IS_TEST) win.webContents.openDevTools()
   } else {
     createProtocol('app')
     win.loadURL('app://./index.html')
   }
+  //平台信息
+  ipcMain.on('process', (e) => {
+    e.sender.send('process', process.platform)
+  })
+  // 最小化
+  ipcMain.on('minApp', () => {
+    win.minimize()
+  })
+  // 退出
+  ipcMain.on('closeApp', () => {
+    win.close();
+    app.exit()
+  })
 }
-
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -44,13 +56,6 @@ app.on('activate', () => {
 })
 
 app.on('ready', async () => {
-  if (isDevelopment && !process.env.IS_TEST) {
-    try {
-      await installExtension(VUEJS3_DEVTOOLS)
-    } catch (e) {
-      console.error('Vue Devtools failed to install:', e.toString())
-    }
-  }
   createWindow()
 })
 

@@ -1,8 +1,7 @@
 <template>
   <div>
-    <top-frame />
-    <h1>Test212222222222</h1>
-    <button @click="goLogin()">Log</button>
+    <top-frame :title="title" style="height: 30px" />
+    
   </div>
 </template>
 
@@ -12,19 +11,24 @@ import topFrame from "@/components/topFrame.vue";
 export default {
   name: "mainPage",
   components: { topFrame },
+  data() {
+    return {
+      title: "首页",
+    };
+  },
   methods: {},
   setup() {
     const router = useRouter();
     const goLogin = () => {
-      console.log("1212");
       router.push("/login");
     };
     return {
-      goLogin
+      goLogin,
     };
-  }
+  },
 };
 </script>
 
 <style>
+
 </style>
