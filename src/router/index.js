@@ -3,7 +3,7 @@ import mainPage from '@/pages/mainPage/mainPage'
 import loginPage from '@/pages/login/loginPage'
 const routes = [{
     path: "/",
-    redirect: '/login',
+    redirect: '/mainPage',
     meta: { title: '首页' }
 },
 {

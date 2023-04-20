@@ -23,17 +23,15 @@ defineProps({
   title: String,
 });
 let isMac = ref(true);
+//获取系统类型 控制金刚键位置
 onMounted(async () => {
-  console.log("通知主进程");
   await ipcRenderer.send("process", "process");
   ipcRenderer.on("process", (e, process) => {
-    console.log("系统:" + process);
     isMac.value = process == "darwin";
   });
 });
 
 function op(msg) {
-  console.log(msg);
   ipcRenderer.send(msg, msg);
 }
 </script>
@@ -86,5 +84,8 @@ function op(msg) {
 }
 .reverse {
   flex-direction: row-reverse;
+}
+img{
+  -webkit-user-drag: none;
 }
 </style>

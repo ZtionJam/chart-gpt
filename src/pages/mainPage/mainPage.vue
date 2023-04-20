@@ -25,9 +25,12 @@
 <script setup>
 import topFrame from "@/components/topFrame.vue";
 import messageCard from "@/components/messageCard.vue";
-import { ref, nextTick } from "vue";
+import { ref, nextTick, onMounted } from "vue";
 import { Promotion } from "@element-plus/icons-vue";
-import { ElMessage } from 'element-plus'
+import { ElMessage } from "element-plus";
+import { useRouter } from "vue-router";
+import { messages, exception } from "@/api";
+const router = useRouter();
 let title = "首页";
 let question = ref("");
 let text = `<img class="size-medium" src="https://fc1tn.baidu.com/it/u=391681853,3049701464&amp;fm=202&amp;mola=new&amp;crop=v1" width="300" height="185" />
@@ -66,6 +69,23 @@ let msgs = ref([
     author: "User",
   },
 ]);
+onMounted(() => {
+  // localStorage.removeItem('token')
+  let user = localStorage.getItem("token");
+  if (user == null) {
+    router.push("/login");
+  } else {
+    messages().then((res) => {
+      if (0 == res.status) {
+        res.json().then((json) => {
+            //成功
+        });
+      }else{
+        exception(res)
+      }
+    });
+  }
+});
 const send = () => {
   if (question.value.length < 1) {
     ElMessage({
