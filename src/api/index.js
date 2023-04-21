@@ -16,16 +16,24 @@ const login = async (data) => {
 // 消息记忆
 const messages = async (data) => {
     headers.Authorization = localStorage.getItem('token')
-    return fetch(url + '/app/AI/messages', {
+    return fetch(url + '/app/ai/messages', {
         method: 'get',
         headers: headers
     })
 }
-// 统一异常处理
+// 消息记忆
+const sendMsg = async (data) => {
+    headers.Authorization = localStorage.getItem('token')
+    return fetch(url + '/app/ai/send', {
+        method: 'post',
+        body: JSON.stringify(data),
+        headers: headers
+    })
+}
+// 统一异常处理 状态
 const exception = (res) => {
     res.json().then(json => {
-        console.log(json)
-        switch (json.code) {
+        switch (res.status) {
             case 401:
                 ElMessage({
                     message: json.msg,
@@ -34,7 +42,7 @@ const exception = (res) => {
                 break
             case 404:
                 ElMessage({
-                    message: json.msg,
+                    message: '数据未找到',
                     type: "error",
                 });
                 break
@@ -49,4 +57,4 @@ const exception = (res) => {
 
 }
 
-export { exception, login, messages };
+export { exception, login, messages, sendMsg };

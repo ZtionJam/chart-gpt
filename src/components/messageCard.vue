@@ -1,14 +1,14 @@
 <template>
-  <div :class="['cardBox', msg.author == 'AI' ? 'AICard' : '']">
+  <div :class="['cardBox', msg.role == 'assistant' ? 'AICard' : '']">
     <div class="avatarBox">
       <el-avatar
         class="avatar"
-        :src="msg.author == 'AI' ? gptLogo : ''"
-        :icon="msg.author == 'User' ? UserFilled : ''"
+        :src="msg.role == 'assistant' ? gptLogo : ''"
+        :icon="msg.role == 'user' ? UserFilled : ''"
       />
     </div>
     <div class="textBox">
-      <v-md-preview :text="msg.text"></v-md-preview>
+      <v-md-preview :text="msg.content"></v-md-preview>
     </div>
   </div>
 </template>
@@ -18,7 +18,7 @@ import { UserFilled } from "@element-plus/icons-vue";
 import { defineProps } from "vue";
 import gptLogo from "@/assets/img/chatgpt_logo.png";
 defineProps({
-  msg: Object,
+  msg: Object
 });
 </script>
 

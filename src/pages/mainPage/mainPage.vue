@@ -11,14 +11,11 @@
       type="textarea"
       placeholder="输入你的问题，Shift+Enter快捷发送"
       class="input"
+      v-loading="sending"
+      element-loading-text="思考中..."
+      element-loading-background="rgba(255, 255, 255, 0.8)"
     />
-    <el-button
-      @click="send"
-      color="#10A37F"
-      class="send"
-      :icon="Promotion"
-      circle
-    />
+    <el-button @click="send" color="#10A37F" class="send" :icon="Promotion" circle />
   </div>
 </template>
 
@@ -29,79 +26,97 @@ import { ref, nextTick, onMounted } from "vue";
 import { Promotion } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
-import { messages, exception } from "@/api";
+import { messages, exception, sendMsg } from "@/api";
 const router = useRouter();
+const toBottom = () => {
+  nextTick(() => {
+    let container = document.getElementById("msgBox");
+    container.scrollTop = container.scrollHeight;
+  });
+};
 let title = "首页";
 let question = ref("");
-let text = `<img class="size-medium" src="https://fc1tn.baidu.com/it/u=391681853,3049701464&amp;fm=202&amp;mola=new&amp;crop=v1" width="300" height="185" />
-<h2 class="md-end-block md-heading"><span class="md-plain md-expand">Vue</span></h2>
-<h3 class="md-end-block md-heading"><span class="md-plain">1. 库和框架</span></h3>
-<p class="md-end-block md-p"><span class="md-plain">库，功能比较单一，侧重于某一部分的功能。例如 jQuery，它的优点就在于节点操作；lodash，它的优点就在于数据操作；在一个项目中，可以引入多个库搭配进行开发。</span></p>
-<p class="md-end-block md-p"><span class="md-plain">框架，针对我们的应用程序提供了一整套的解决方案，而不是针对某一个单独的功能点。框架与框架之间有一定的排他性，在一个项目中，不建议混合多个框架进行开发。</span></p>
+let sending = ref(false);
 
-<h3 class="md-end-block md-heading md-focus"><span class="md-plain md-expand">2. 前端框架</span></h3>
-<p class="md-end-block md-p"><span class="md-plain">现在前端主流的框架主要分为以下三个：</span></p>
-
-<ol class="ol-list" start="">
- 	<li class="md-list-item">
-<p class="md-end-block md-p"><span class="md-plain">Angular：诞生于 2009 年，Google；</span></p>
-</li>
- 	<li class="md-list-item">
-<p class="md-end-block md-p"><span class="md-plain">React：诞生于 2013 年，Facebook；</span></p>
-</li>
- 	<li class="md-list-item">
-<p class="md-end-block md-p"><span class="md-plain">Vue：诞生于 2014 年，尤雨溪；</span></p>
-</li>
-</ol>
-<h3 class="md-end-block md-heading"><span class="md-plain">3. Vue2.x</span></h3>
-<p class="md-end-block md-p"><span class="md-plain md-expand">Vue3.0 在 2020.09 发布正式版，现阶段我们的学习以 Vue2.x 为主。</span></p>`;
 let msgs = ref([
   {
-    text: "介绍一下Vue",
-    author: "User",
+    content: "介绍一下Vue",
+    role: "user"
   },
   {
-    text: text,
-    author: "AI",
+    content: "好东西",
+    role: "assistant"
   },
   {
-    text: "好的感谢",
-    author: "User",
-  },
+    content: "好的感谢",
+    role: "user"
+  }
 ]);
 onMounted(() => {
-  // localStorage.removeItem('token')
   let user = localStorage.getItem("token");
   if (user == null) {
     router.push("/login");
   } else {
-    messages().then((res) => {
-      if (0 == res.status) {
-        res.json().then((json) => {
-            //成功
+    messages().then(res => {
+      if (200 == res.status) {
+        res.json().then(json => {
+          if (0 == json.code) {
+            msgs.value = json.data;
+            toBottom();
+          } else {
+            ElMessage({
+              message: json.msg,
+              type: "error"
+            });
+          }
         });
-      }else{
-        exception(res)
+      } else {
+        exception(res);
       }
     });
   }
 });
 const send = () => {
+  if(sending.value){
+    ElMessage({
+      message: "思考中....",
+      type: "warning"
+    });
+    return
+  }
   if (question.value.length < 1) {
     ElMessage({
       message: "说点什么吧~",
-      type: "warning",
+      type: "warning"
     });
     return;
   }
+  sending.value=true;
   let msg = {
-    text: question.value,
-    author: "User",
+    content: question.value,
+    role: "user"
   };
+  question.value = "";
   msgs.value.push(msg);
-  nextTick(() => {
-    let container = document.getElementById("msgBox");
-    container.scrollTop = container.scrollHeight;
+  toBottom();
+  sendMsg(msg).then(res => {
+    if (200 == res.status) {
+      res.json().then(json => {
+        sending.value=false;
+        console.log(json);
+        if (0 == json.code) {
+          msgs.value.push(...json.data);
+          toBottom();
+        } else {
+          ElMessage({
+            message: json.msg,
+            type: "error"
+          });
+        }
+      });
+    } else {
+      exception(res);
+    }
   });
 };
 </script>
@@ -136,5 +151,12 @@ textarea {
   overflow: hidden;
   resize: none !important;
   border-radius: 10px;
+}
+.input textarea {
+  border-radius: 10px;
+}
+#app div div .el-loading-mask{
+  border-radius: 10px;
+  opacity: 0.8;
 }
 </style>
