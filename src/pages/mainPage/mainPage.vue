@@ -15,7 +15,34 @@
       element-loading-text="思考中..."
       element-loading-background="rgba(255, 255, 255, 0.8)"
     />
-    <el-button @click="send" color="#10A37F" class="send" :icon="Promotion" circle />
+    <el-button
+      @click="send"
+      color="#10A37F"
+      class="send"
+      :icon="Promotion"
+      circle
+    />
+    <el-dialog
+    class="newVersionDialog"
+      v-model="centerDialogVisible"
+      title="发现新版本"
+      width="30%"
+      align-center
+      :modal="false"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :show-close="!isForced"
+    >
+      <span>{{ introduce }}</span>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button v-if="!isForced" @click="centerDialogVisible = false">取消</el-button>
+          <el-button color="#10a37f" type="primary" @click="centerDialogVisible = false">
+          立即更新
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -27,6 +54,7 @@ import { Promotion } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
 import { messages, exception, sendMsg } from "@/api";
+import { ipcRenderer } from "electron";
 const router = useRouter();
 const toBottom = () => {
   nextTick(() => {
@@ -34,39 +62,35 @@ const toBottom = () => {
     container.scrollTop = container.scrollHeight;
   });
 };
+//标题
 let title = "首页";
+//问题
 let question = ref("");
+//发送中
 let sending = ref(false);
-
-let msgs = ref([
-  {
-    content: "介绍一下Vue",
-    role: "user"
-  },
-  {
-    content: "好东西",
-    role: "assistant"
-  },
-  {
-    content: "好的感谢",
-    role: "user"
-  }
-]);
+//更新框
+let centerDialogVisible=ref(false)
+let isForced=ref(true)
+let msgs = ref([]);
 onMounted(() => {
+  //检查更新
+  ipcRenderer.send("check-update");
+  //检查登录状态
   let user = localStorage.getItem("token");
   if (user == null) {
     router.push("/login");
   } else {
-    messages().then(res => {
+    //加载历史消息
+    messages().then((res) => {
       if (200 == res.status) {
-        res.json().then(json => {
+        res.json().then((json) => {
           if (0 == json.code) {
             msgs.value = json.data;
             toBottom();
           } else {
             ElMessage({
               message: json.msg,
-              type: "error"
+              type: "error",
             });
           }
         });
@@ -76,33 +100,34 @@ onMounted(() => {
     });
   }
 });
+//发送消息
 const send = () => {
-  if(sending.value){
+  if (sending.value) {
     ElMessage({
       message: "思考中....",
-      type: "warning"
+      type: "warning",
     });
-    return
+    return;
   }
   if (question.value.length < 1) {
     ElMessage({
       message: "说点什么吧~",
-      type: "warning"
+      type: "warning",
     });
     return;
   }
-  sending.value=true;
+  sending.value = true;
   let msg = {
     content: question.value,
-    role: "user"
+    role: "user",
   };
   question.value = "";
   msgs.value.push(msg);
   toBottom();
-  sendMsg(msg).then(res => {
+  sendMsg(msg).then((res) => {
     if (200 == res.status) {
-      res.json().then(json => {
-        sending.value=false;
+      res.json().then((json) => {
+        sending.value = false;
         console.log(json);
         if (0 == json.code) {
           msgs.value.push(...json.data);
@@ -110,7 +135,7 @@ const send = () => {
         } else {
           ElMessage({
             message: json.msg,
-            type: "error"
+            type: "error",
           });
         }
       });
@@ -119,9 +144,27 @@ const send = () => {
     }
   });
 };
+let updateInfo=ref({})
+let introduce=ref('发现新版本了！')
+//更新消息监听
+ipcRenderer.on("update-available", (e, info) => {
+  updateInfo.value=info
+  isForced=info.forced
+  introduce=info.introduce
+  centerDialogVisible.value=true
+  ElMessage({
+    message: "发现新版本",
+    type: "warning",
+  });
+});
 </script>
 
 <style>
+.newVersionDialog{
+  border-radius: 10px;
+  width: 350px;
+  box-shadow: 0 0px 10px rgba(11, 11, 11, 0.3);
+}
 ::-webkit-scrollbar {
   width: 0px;
   background-color: #f5f5f5;
@@ -155,7 +198,7 @@ textarea {
 .input textarea {
   border-radius: 10px;
 }
-#app div div .el-loading-mask{
+#app div div .el-loading-mask {
   border-radius: 10px;
   opacity: 0.8;
 }

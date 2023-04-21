@@ -2,13 +2,15 @@
 
 import { app, protocol, BrowserWindow, ipcMain } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
+import { autoUpdater } from 'electron-updater'
 import installExtension, { VUEJS3_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
-
+//更新配置
+autoUpdater.autoDownload = false
 async function createWindow() {
   const win = new BrowserWindow({
     width: 800,
@@ -35,13 +37,23 @@ async function createWindow() {
     win.close();
     app.exit()
   })
+  //更新
+  ipcMain.on('check-update', () => {
+    autoUpdater.checkForUpdates().catch(err => {
+      console.log('检查更新失败',e)
+    })
+  })
+  autoUpdater.on('update-available', (info) => {
+    win.webContents.send('update-available',info)
+  })
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
-    if (!process.env.IS_TEST) win.webContents.openDevTools()
+    // if (!process.env.IS_TEST) win.webContents.openDevTools()
   } else {
     createProtocol('app')
     win.loadURL('app://./index.html')
   }
+  win.webContents.openDevTools()
 }
 
 app.on('window-all-closed', () => {

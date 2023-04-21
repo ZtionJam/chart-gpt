@@ -1,6 +1,6 @@
 import fetch from 'electron-fetch'
 import { ElMessage } from "element-plus";
-const url = 'http://127.0.0.1:8081';
+const url = 'http://gpt.ztion.cn';
 
 const headers = {
     'Content-Type': 'application/json',
