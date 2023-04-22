@@ -4,12 +4,12 @@ import loginPage from '@/pages/login/loginPage'
 const routes = [{
     path: "/",
     redirect: '/mainPage',
-    meta: { title: '首页' }
+    meta: { title: '柴特GPT' }
 },
 {
     path: "/mainPage",
     component: mainPage,
-    meta: { title: '首页' }
+    meta: { title: '柴特GPT' }
 },
 {
     path: "/login",

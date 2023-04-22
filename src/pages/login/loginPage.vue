@@ -14,24 +14,24 @@
             top: 40%;
             left: 12%;
           "
-          >ChatGPT</el-text
+          >柴特GPT</el-text
         >
         <el-text
           style="
             font-size: 15px;
             font-weight: 600;
             position: fixed;
-            top: 48%;
+            top: 50%;
             left: 35%;
           "
-          >API版</el-text
+          >By ZtionJam</el-text
         >
-        <el-text style="font-size: 15px; position: fixed; top: 52%; left: 5%"
-          >OpenAI推出的人工智能自然语言处理工具，使用GPT-3.5架构。</el-text
+        <el-text style="font-size: 15px; position: fixed; top: 55%; left: 5%"
+          >基于Open AI GPT模型的人工智能自然语言处理工具</el-text
         >
-        <el-text style="font-size: 12px; position: fixed; top: 60%; left: 17%"
+        <!-- <el-text style="font-size: 12px; position: fixed; top: 60%; left: 17%"
           >The App Author: <el-text tag="b">ZtionJam</el-text></el-text
-        >
+        > -->
       </div>
       <div class="loginBox">
         <div
@@ -94,7 +94,7 @@ import { ref,onMounted } from "vue";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
 const router = useRouter();
-let form = ref({ username: "admin", password: "admin" });
+let form = ref({ username: "", password: "" });
 let isSignIn = ref(false);
 let loading = ref(false);
 const tagle = () => {

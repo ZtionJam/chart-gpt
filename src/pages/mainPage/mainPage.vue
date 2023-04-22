@@ -37,7 +37,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button v-if="!isForced" @click="centerDialogVisible = false">取消</el-button>
-          <el-button color="#10a37f" type="primary" @click="centerDialogVisible = false">
+          <el-button color="#10a37f" type="primary" @click="update">
           立即更新
           </el-button>
         </span>
@@ -63,7 +63,7 @@ const toBottom = () => {
   });
 };
 //标题
-let title = "首页";
+let title = "柴特GPT";
 //问题
 let question = ref("");
 //发送中
@@ -92,6 +92,9 @@ onMounted(() => {
               message: json.msg,
               type: "error",
             });
+            if(401==json.code){
+            router.push("/login");
+          }
           }
         });
       } else {
@@ -137,6 +140,9 @@ const send = () => {
             message: json.msg,
             type: "error",
           });
+          if(401==json.code){
+            router.push("/login");
+          }
         }
       });
     } else {
@@ -157,6 +163,13 @@ ipcRenderer.on("update-available", (e, info) => {
     type: "warning",
   });
 });
+ipcRenderer.on("console", (e, info) => {
+  console.log(info)
+});
+//更新事件
+const update=()=>{
+  
+}
 </script>
 
 <style>

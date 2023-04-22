@@ -10,7 +10,7 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
 //更新配置
-autoUpdater.autoDownload = false
+autoUpdater.autoDownload = true
 async function createWindow() {
   const win = new BrowserWindow({
     width: 800,
@@ -40,12 +40,30 @@ async function createWindow() {
   //更新
   ipcMain.on('check-update', () => {
     autoUpdater.checkForUpdates().catch(err => {
-      console.log('检查更新失败',e)
+      win.webContents.send('console', err)
     })
   })
   autoUpdater.on('update-available', (info) => {
-    win.webContents.send('update-available',info)
+    win.webContents.send('console', info)
+    win.webContents.send('update-available', info)
   })
+  autoUpdater.on('download-progress', (progressObj) => {
+    win.webContents.send('console', progressObj)
+  })
+  autoUpdater.on('error', (error) => {
+    win.webContents.send('console', error)
+  })
+  autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName, releaseDate, updateUrl) => {
+    win.webContents.send('console', {
+      event,
+      releaseNotes,
+      releaseName,
+      releaseDate,
+      updateUrl
+    })
+
+  })
+
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
     // if (!process.env.IS_TEST) win.webContents.openDevTools()

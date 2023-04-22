@@ -9,7 +9,7 @@ module.exports = defineConfig({
     electronBuilder: {
       nodeIntegration: true,
       builderOptions: {
-        productName: "柴特狗屁通",
+        productName: "柴特GPT",
         appId: "cn.ztion.gpt",
         copyright: "ZtionJam",
         nsis: {
