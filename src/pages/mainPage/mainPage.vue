@@ -6,6 +6,7 @@
     </div>
 
     <el-input
+      @keyup.enter="quickSend"
       v-model="question"
       :autosize="{ minRows: 2, maxRows: 4 }"
       type="textarea"
@@ -23,22 +24,52 @@
       circle
     />
     <el-dialog
-    class="newVersionDialog"
-      v-model="centerDialogVisible"
-      title="发现新版本"
+      class="newVersionDialog"
+      v-model="dialogData.centerDialogVisible"
+      :title="dialogData.dialogTitle"
       width="30%"
       align-center
       :modal="false"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
-      :show-close="!isForced"
+      :show-close="!dialogData.isForced"
     >
-      <span>{{ introduce }}</span>
+      <span>
+        <span v-show="dialogData.isShowContent">
+          {{ dialogData.introduce }}</span
+        >
+        <el-progress
+          :text-inside="true"
+          :stroke-width="24"
+          :percentage="progress.percent"
+          status="success"
+          v-show="dialogData.isShowProgress"
+        />
+      </span>
       <template #footer>
         <span class="dialog-footer">
-          <el-button v-if="!isForced" @click="centerDialogVisible = false">取消</el-button>
-          <el-button color="#10a37f" type="primary" @click="update">
-          立即更新
+          <el-button
+            v-if="!dialogData.isForced"
+            @click="dialogData.centerDialogVisible = false"
+            >取消</el-button
+          >
+          <el-button v-if="dialogData.isForced" @click="close">退出</el-button>
+          <el-button
+            v-show="!dialogData.isInstall"
+            color="#10a37f"
+            type="primary"
+            @click="update"
+          >
+            立即更新
+          </el-button>
+          <el-button
+            v-show="dialogData.isInstall"
+            color="#10a37f"
+            type="primary"
+            @click="installNow"
+            :disabled="!dialogData.canInstall"
+          >
+            立即安装
           </el-button>
         </span>
       </template>
@@ -69,8 +100,16 @@ let question = ref("");
 //发送中
 let sending = ref(false);
 //更新框
-let centerDialogVisible=ref(false)
-let isForced=ref(true)
+let dialogData = ref({
+  dialogTitle: "发现新版本",
+  isShowContent: true,
+  centerDialogVisible: false,
+  isForced: true,
+  introduce: "发现新版本了",
+  isInstall: false,
+  isShowProgress: false,
+  canInstall: false,
+});
 let msgs = ref([]);
 onMounted(() => {
   //检查更新
@@ -92,9 +131,9 @@ onMounted(() => {
               message: json.msg,
               type: "error",
             });
-            if(401==json.code){
-            router.push("/login");
-          }
+            if (401 == json.code) {
+              router.push("/login");
+            }
           }
         });
       } else {
@@ -103,6 +142,11 @@ onMounted(() => {
     });
   }
 });
+const quickSend = (e) => {
+  if (e.shiftKey === true && e.key === "Enter") {
+    send();
+  }
+};
 //发送消息
 const send = () => {
   if (sending.value) {
@@ -112,7 +156,7 @@ const send = () => {
     });
     return;
   }
-  if (question.value.length < 1) {
+  if (question.value.trim().length < 1) {
     ElMessage({
       message: "说点什么吧~",
       type: "warning",
@@ -140,7 +184,7 @@ const send = () => {
             message: json.msg,
             type: "error",
           });
-          if(401==json.code){
+          if (401 == json.code) {
             router.push("/login");
           }
         }
@@ -150,30 +194,69 @@ const send = () => {
     }
   });
 };
-let updateInfo=ref({})
-let introduce=ref('发现新版本了！')
+let updateInfo = ref({});
+//退出
+const close = () => {
+  ipcRenderer.send("closeApp");
+};
 //更新消息监听
 ipcRenderer.on("update-available", (e, info) => {
-  updateInfo.value=info
-  isForced=info.forced
-  introduce=info.introduce
-  centerDialogVisible.value=true
+  updateInfo.value = info;
+  dialogData.value.isForced = info.forced;
+  dialogData.value.introduce = info.introduce;
+  dialogData.value.centerDialogVisible = true;
   ElMessage({
     message: "发现新版本",
     type: "warning",
   });
 });
+//来自主线程的通知，方便调试
 ipcRenderer.on("console", (e, info) => {
-  console.log(info)
+  console.log(info);
 });
-//更新事件
-const update=()=>{
-  
-}
+//立即更新事件
+const update = () => {
+  ipcRenderer.send("updateNow");
+  dialogData.value = {
+    dialogTitle: "正在下载",
+    isShowContent: false,
+    centerDialogVisible: true,
+    isForced: true,
+    introduce: "",
+    isInstall: true,
+    isShowProgress: true,
+    canInstall: false,
+  };
+};
+//下载进度
+let progress = ref({
+  bytesPerSecond: 0,
+  delta: 0,
+  percent: 1,
+  total: 0,
+  transferred: 0,
+});
+ipcRenderer.on("download-progress", (e, progressNow) => {
+  progress.value.percent = Math.round(progressNow.percent);
+});
+//下载完成
+ipcRenderer.on("update-downloaded", () => {
+  progress.value.percent = 100;
+  dialogData.value.dialogTitle = "下载完成";
+  dialogData.value.canInstall = true;
+  ElMessage({
+    message: "更新下载完成~",
+    type: "success",
+  });
+});
+//立即安装事件
+const installNow = () => {
+  ipcRenderer.send("installNow");
+};
 </script>
 
 <style>
-.newVersionDialog{
+.newVersionDialog {
   border-radius: 10px;
   width: 350px;
   box-shadow: 0 0px 10px rgba(11, 11, 11, 0.3);
@@ -202,6 +285,7 @@ const update=()=>{
   left: 60px;
   box-shadow: 0 0px 10px rgba(11, 11, 11, 0.3);
   border-radius: 10px;
+  z-index: 999;
 }
 textarea {
   overflow: hidden;

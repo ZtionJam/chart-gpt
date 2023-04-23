@@ -10,7 +10,7 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
 //更新配置
-autoUpdater.autoDownload = true
+autoUpdater.autoDownload = false
 async function createWindow() {
   const win = new BrowserWindow({
     width: 800,
@@ -43,18 +43,28 @@ async function createWindow() {
       win.webContents.send('console', err)
     })
   })
+  //立即下载更新
+  ipcMain.on('updateNow', () => {
+    autoUpdater.downloadUpdate().catch((err) => {
+      win.webContents.send('console', err)
+    })
+  })
+  //立即下载更新
+  ipcMain.on('installNow', () => {
+    autoUpdater.quitAndInstall()
+  })
   autoUpdater.on('update-available', (info) => {
     win.webContents.send('console', info)
     win.webContents.send('update-available', info)
   })
   autoUpdater.on('download-progress', (progressObj) => {
-    win.webContents.send('console', progressObj)
+    win.webContents.send('download-progress', progressObj)
   })
   autoUpdater.on('error', (error) => {
     win.webContents.send('console', error)
   })
   autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName, releaseDate, updateUrl) => {
-    win.webContents.send('console', {
+    win.webContents.send('update-downloaded', {
       event,
       releaseNotes,
       releaseName,
@@ -66,12 +76,14 @@ async function createWindow() {
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
-    // if (!process.env.IS_TEST) win.webContents.openDevTools()
+    if (!process.env.IS_TEST) win.webContents.openDevTools()
   } else {
     createProtocol('app')
     win.loadURL('app://./index.html')
   }
-  win.webContents.openDevTools()
+  win.once('ready-to-show', () => {
+    win.show()
+  })
 }
 
 app.on('window-all-closed', () => {

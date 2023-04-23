@@ -18,11 +18,14 @@ module.exports = defineConfig({
           allowToChangeInstallationDirectory: true,
           createDesktopShortcut: true,
           createStartMenuShortcut: true,
-          shortcutName: "柴特狗屁通"
+          shortcutName: "柴特GPT"
         },
         publish: {
           provider: "generic",
           url: "http://ztion.cn/GPT"
+        },
+        win: {
+          icon: './public/icon.ico'
         }
       }
     }
