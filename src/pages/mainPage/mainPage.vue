@@ -2,6 +2,18 @@
   <div>
     <top-frame :title="title" style="height: 30px" />
     <div class="msgBox" id="msgBox">
+      <div class="defaultMsg" v-if="msgs.length==0">
+        <el-image
+          style="width: 200px; height: 200px"
+          :src="gptLogo"
+          :fit="fit"
+        />
+        <br />
+        <div style="text-align: center">柴特GPT</div>
+        <div style="text-align: center; font-size: 14px; font-weight: 399">
+          速速咱们的开始对话吧~
+        </div>
+      </div>
       <messageCard v-for="(data, key) in msgs" :key="key" :msg="data" />
     </div>
     <el-button
@@ -111,6 +123,7 @@ import topFrame from "@/components/topFrame.vue";
 import messageCard from "@/components/messageCard.vue";
 // import clearIcon from "@/assets/img/clear.png";
 import { ref, nextTick, onMounted } from "vue";
+import gptLogo from "@/assets/img/chatgpt_logo.png";
 import { Promotion, DeleteFilled } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
@@ -363,7 +376,14 @@ textarea {
   box-shadow: 0 0px 10px rgba(11, 11, 11, 0.3);
   user-select: none;
 }
-/* .msgBox :deep(.cardBox)  {
-  padding-bottom: 20px;
-} */
+.defaultMsg {
+  width: 200px;
+  font-size: 20px;
+  font-weight: 700;
+  position: relative;
+  left: 50%;
+  top: 100px;
+  transform: translate(-50%);
+  opacity: 0.4;
+}
 </style>
