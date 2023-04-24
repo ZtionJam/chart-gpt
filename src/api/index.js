@@ -22,12 +22,20 @@ const messages = async (data) => {
         headers: headers
     })
 }
-// 消息记忆
+// 发送消息
 const sendMsg = async (data) => {
     headers.Authorization = localStorage.getItem('token')
     return fetch(url + '/app/ai/send', {
         method: 'post',
         body: JSON.stringify(data),
+        headers: headers
+    })
+}
+// 清除消息
+const clear = async (data) => {
+    headers.Authorization = localStorage.getItem('token')
+    return fetch(url + '/app/ai/clear', {
+        method: 'delete',
         headers: headers
     })
 }
@@ -58,4 +66,4 @@ const exception = (res) => {
 
 }
 
-export { exception, login, messages, sendMsg };
+export { exception, login, messages, sendMsg, clear };

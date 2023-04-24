@@ -4,7 +4,15 @@
     <div class="msgBox" id="msgBox">
       <messageCard v-for="(data, key) in msgs" :key="key" :msg="data" />
     </div>
-
+    <el-button
+      @click="clearVisible = true"
+      color="#10A37F"
+      title="清除记录"
+      class="clearBtn"
+      type="success"
+      :icon="DeleteFilled"
+      circle
+    />
     <el-input
       @keyup.enter="quickSend"
       v-model="question"
@@ -74,17 +82,39 @@
         </span>
       </template>
     </el-dialog>
+
+    <el-dialog
+      v-model="clearVisible"
+      title="清除消息记录"
+      width="30%"
+      align-center
+      :modal="false"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      class="clearDialog"
+    >
+      <span
+        >确定清除记录吗？AI会根据消息记录回复你的问题，清除消息记录有助于提高AI的响应速度，当AI回复不全时，清除即可解决。</span
+      >
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="clearVisible = false">取消</el-button>
+          <el-button type="primary" @click="clearNow"> 确认 </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import topFrame from "@/components/topFrame.vue";
 import messageCard from "@/components/messageCard.vue";
+// import clearIcon from "@/assets/img/clear.png";
 import { ref, nextTick, onMounted } from "vue";
-import { Promotion } from "@element-plus/icons-vue";
+import { Promotion, DeleteFilled } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
-import { messages, exception, sendMsg } from "@/api";
+import { messages, exception, sendMsg, clear } from "@/api";
 import { ipcRenderer } from "electron";
 const router = useRouter();
 const toBottom = () => {
@@ -194,6 +224,25 @@ const send = () => {
     }
   });
 };
+let clearVisible = ref(false);
+const clearNow = () => {
+  clear().then((ret) => {
+    if (ret.status == 200) {
+      ret.json().then((json) => {
+        let elm = { message: json.msg, type: "error" };
+        if (0 == json.code) {
+          msgs.value = {};
+          elm.type = "success";
+          elm.message = "清除成功";
+        }
+        ElMessage(elm);
+      });
+    } else {
+      exception(ret);
+    }
+  });
+  clearVisible.value = false;
+};
 let updateInfo = ref({});
 //退出
 const close = () => {
@@ -256,6 +305,13 @@ const installNow = () => {
 </script>
 
 <style>
+.clearBtn {
+  width: 40px;
+  height: 40px;
+  position: fixed;
+  bottom: 35px;
+  left: 20px;
+}
 .newVersionDialog {
   border-radius: 10px;
   width: 350px;
@@ -266,23 +322,26 @@ const installNow = () => {
   background-color: #f5f5f5;
 }
 .msgBox {
-  height: 520px;
+  height: 554px;
   margin: 0px auto;
   padding-top: 5px;
   overflow: auto;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  padding-bottom: 0;
 }
 .send {
   width: 40px;
   height: 40px;
   position: fixed;
   bottom: 35px;
-  right: 40px;
+  right: 20px;
 }
 .input {
   width: 80%;
   position: fixed;
   bottom: 30px;
-  left: 60px;
+  left: 80px;
   box-shadow: 0 0px 10px rgba(11, 11, 11, 0.3);
   border-radius: 10px;
   z-index: 999;
@@ -299,4 +358,12 @@ textarea {
   border-radius: 10px;
   opacity: 0.8;
 }
+.clearDialog {
+  width: 400px;
+  box-shadow: 0 0px 10px rgba(11, 11, 11, 0.3);
+  user-select: none;
+}
+/* .msgBox :deep(.cardBox)  {
+  padding-bottom: 20px;
+} */
 </style>

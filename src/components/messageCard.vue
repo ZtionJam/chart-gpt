@@ -37,7 +37,7 @@ defineProps({
   width: 100%;
   background-color: white;
   display: flex;
-  padding-bottom: 20px;
+  padding-bottom: 30px;
   border-bottom: 1px solid #ccc;
 }
 .AICard {
