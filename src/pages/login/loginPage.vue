@@ -14,8 +14,7 @@
             top: 40%;
             left: 12%;
           "
-          >柴特GPT</el-text
-        >
+        >柴特GPT</el-text>
         <el-text
           style="
             font-size: 15px;
@@ -24,14 +23,13 @@
             top: 50%;
             left: 35%;
           "
-          >By ZtionJam</el-text
-        >
-        <el-text style="font-size: 15px; position: fixed; top: 55%; left: 5%"
-          >基于Open AI GPT模型的人工智能自然语言处理工具</el-text
-        >
+        >By ZtionJam</el-text>
+        <el-text
+          style="font-size: 15px; position: fixed; top: 55%; left: 5%"
+        >基于Open AI GPT模型的人工智能自然语言处理工具</el-text>
         <!-- <el-text style="font-size: 12px; position: fixed; top: 60%; left: 17%"
           >The App Author: <el-text tag="b">ZtionJam</el-text></el-text
-        > -->
+        >-->
       </div>
       <div class="loginBox">
         <div
@@ -48,28 +46,20 @@
               left: 74%;
               color: #10a37f;
             "
-            >{{ isSignIn ? "注册" : "登录" }}</el-text
-          >
-          <el-input
-            class="authInput"
-            v-model="form.username"
-            placeholder="账号 / 用户名"
-          />
-          <el-input
-            class="authInput"
-            v-model="form.password"
-            placeholder="密码"
-          />
+          >{{ isSignIn ? "注册" : "登录" }}</el-text>
+          <el-input class="authInput" v-model="form.username" placeholder="账号 / 用户名" />
+          <el-input class="authInput" v-model="form.password" placeholder="密码" />
           <el-button
             id="submit"
             type="success"
             color="#10a37f"
             @click="submit"
-            >{{ isSignIn ? "注册" : "登录" }}</el-button
-          >
-          <el-link type="primary" @click="tagle">{{
+          >{{ isSignIn ? "注册" : "登录" }}</el-button>
+          <el-link type="primary" @click="tagle">
+            {{
             isSignIn ? "已有账号 ? 前往登录>>" : "没有账号 ? 前往注册>>"
-          }}</el-link>
+            }}
+          </el-link>
           <div
             style="
               position: relative;
@@ -77,9 +67,7 @@
               font-size: 12px;
               top: 55%;
             "
-          >
-            仅学习使用，请勿用于商业用途
-          </div>
+          >仅学习使用，请勿用于商业用途</div>
         </div>
       </div>
     </div>
@@ -90,7 +78,7 @@
 import topFrame from "@/components/topFrame.vue";
 import gptLogo from "@/assets/img/chatgpt_logo.png";
 import { login } from "@/api";
-import { ref,onMounted } from "vue"; 
+import { ref, onMounted } from "vue";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -98,44 +86,53 @@ let form = ref({ username: "", password: "" });
 let isSignIn = ref(false);
 let loading = ref(false);
 const tagle = () => {
-  loading.value=true;
+  loading.value = true;
   setTimeout(() => {
-    form=ref({})
-    loading.value=false;
+    form = ref({});
+    loading.value = false;
     isSignIn.value = !isSignIn.value;
   }, 500);
 };
+//注册
+const register = () => {
+
+};
+//提交
 const submit = () => {
-  loading.value=true
-  login(form.value).then((res) => {
-    res.json().then((json) => {
+  if (isSignIn) {
+    register();
+    return;
+  }
+  loading.value = true;
+  login(form.value).then(res => {
+    res.json().then(json => {
       if (0 == json.code) {
         ElMessage({
           message: "登录成功~",
-          type: "success",
+          type: "success"
         });
-        localStorage.setItem('token',json.data.access_token)
-        router.push('/mainPage');
-      }else{
+        localStorage.setItem("token", json.data.access_token);
+        router.push("/mainPage");
+      } else {
         ElMessage({
-          message:json.msg,
-          type: "error",
+          message: json.msg,
+          type: "error"
         });
       }
-      loading.value=false
+      loading.value = false;
     });
   });
 };
-onMounted(()=>{
+onMounted(() => {
   ElMessage({
-      message: "请先登录~",
-      type: "warning",
-    });
-})
+    message: "请先登录~",
+    type: "warning"
+  });
+});
 </script>
 
 <style>
-#app .loginBox .el-loading-mask{
+#app .loginBox .el-loading-mask {
   border-radius: 10px;
 }
 #submit {

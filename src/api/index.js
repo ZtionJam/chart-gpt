@@ -14,6 +14,14 @@ const login = async (data) => {
         headers: headers
     })
 }
+// 登录
+const register = async (data) => {
+    return fetch(url + '/app/user/register', {
+        method: 'post',
+        body: JSON.stringify(data),
+        headers: headers
+    })
+}
 // 消息记忆
 const messages = async (data) => {
     headers.Authorization = localStorage.getItem('token')
