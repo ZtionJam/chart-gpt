@@ -4,9 +4,9 @@
     <div class="contentBox">
       <div class="infoBox">
         <div class="logoBox">
-          <el-image class="logo" style="width: 100px" :src="gptLogo" />
+          <!-- <el-image class="logo" style="width: 100px" :src="gptLogo" /> -->
         </div>
-        <el-text
+        <!-- <el-text
           style="
             font-size: 50px;
             font-weight: 600;
@@ -26,10 +26,7 @@
         >By ZtionJam</el-text>
         <el-text
           style="font-size: 15px; position: fixed; top: 55%; left: 5%"
-        >基于Open AI GPT模型的人工智能自然语言处理工具</el-text>
-        <!-- <el-text style="font-size: 12px; position: fixed; top: 60%; left: 17%"
-          >The App Author: <el-text tag="b">ZtionJam</el-text></el-text
-        >-->
+        >基于Open AI GPT模型的人工智能自然语言处理工具</el-text> -->
       </div>
       <div class="loginBox">
         <div
@@ -47,25 +44,33 @@
               color: #10a37f;
             "
           >{{ isSignIn ? "注册" : "登录" }}</el-text>
+           <el-link class="tagle" type="primary" @click="tagle">
+            {{
+            isSignIn ? "已有账号 ? 前往登录>>" : "没有账号 ? 前往注册>>"
+            }}
+          </el-link>
           <el-input class="authInput" v-model="form.username" placeholder="账号 / 用户名" />
-          <el-input class="authInput" v-model="form.password" placeholder="密码" />
+          <el-input class="authInput" v-model="form.email" placeholder="邮箱" />
+          <el-input class="authInput" type="password" v-model="form.password" placeholder="密码" />
+          <el-input v-show="isSignIn" class="authInput codeInput" v-model="form.code" placeholder="验证码" />
+          <el-button
+            id="sendCodeBtn"
+            v-show="isSignIn"
+            class="sendCodeBtn"
+            type="success"
+            color="#10a37f"
+          >发送</el-button>
           <el-button
             id="submit"
             type="success"
             color="#10a37f"
             @click="submit"
           >{{ isSignIn ? "注册" : "登录" }}</el-button>
-          <el-link type="primary" @click="tagle">
-            {{
-            isSignIn ? "已有账号 ? 前往登录>>" : "没有账号 ? 前往注册>>"
-            }}
-          </el-link>
           <div
             style="
-              position: relative;
+              margin-top:100px;
               text-align: center;
               font-size: 12px;
-              top: 55%;
             "
           >仅学习使用，请勿用于商业用途</div>
         </div>
@@ -95,11 +100,11 @@ const tagle = () => {
 };
 //注册
 const register = () => {
-
+  alert(12)
 };
 //提交
 const submit = () => {
-  if (isSignIn) {
+  if (isSignIn.value) {
     register();
     return;
   }
@@ -131,7 +136,7 @@ onMounted(() => {
 });
 </script>
 
-<style>
+<style scoped>
 #app .loginBox .el-loading-mask {
   border-radius: 10px;
 }
@@ -145,7 +150,7 @@ onMounted(() => {
   width: 80%;
   position: relative;
   left: 10%;
-  top: 30%;
+  top: 20%;
   margin-top: 10px;
 }
 .loginPanel {
@@ -178,5 +183,18 @@ onMounted(() => {
 .contentBox {
   display: flex;
   user-select: none;
+}
+.tagle{
+  position: relative;
+  top:17%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.codeInput{
+  width: 120px;
+}
+.sendCodeBtn{
+  top: 20%;
+  left: 50%;
 }
 </style>
