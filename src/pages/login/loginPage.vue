@@ -4,9 +4,9 @@
     <div class="contentBox">
       <div class="infoBox">
         <div class="logoBox">
-          <!-- <el-image class="logo" style="width: 100px" :src="gptLogo" /> -->
+          <el-image class="logo" style="width: 100px" :src="gptLogo" />
         </div>
-        <!-- <el-text
+        <el-text
           style="
             font-size: 50px;
             font-weight: 600;
@@ -26,7 +26,7 @@
         >By ZtionJam</el-text>
         <el-text
           style="font-size: 15px; position: fixed; top: 55%; left: 5%"
-        >基于Open AI GPT模型的人工智能自然语言处理工具</el-text>-->
+        >基于Open AI GPT模型的人工智能自然语言处理工具</el-text>
       </div>
       <div class="loginBox">
         <div
