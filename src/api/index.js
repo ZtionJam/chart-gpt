@@ -1,7 +1,7 @@
 import fetch from 'electron-fetch'
 import { ElMessage } from "element-plus";
-const url = 'http://gpt.ztion.cn/api';
-// const url = 'http://127.0.0.1:8081';
+// const url = 'http://gpt.ztion.cn/api';
+const url = 'http://127.0.0.1:8081';
 
 const headers = {
     'Content-Type': 'application/json',
@@ -14,9 +14,17 @@ const login = async (data) => {
         headers: headers
     })
 }
-// 登录
+// 注册
 const register = async (data) => {
     return fetch(url + '/app/user/register', {
+        method: 'post',
+        body: JSON.stringify(data),
+        headers: headers
+    })
+}
+// 发送验证码
+const sendCode = async (data) => {
+    return fetch(url + '/app/user/sendCodeMail', {
         method: 'post',
         body: JSON.stringify(data),
         headers: headers
@@ -74,4 +82,4 @@ const exception = (res) => {
 
 }
 
-export { exception, login, messages, sendMsg, clear };
+export { exception, login, messages, sendMsg, clear,register,sendCode };
