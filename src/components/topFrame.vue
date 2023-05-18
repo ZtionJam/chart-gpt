@@ -6,6 +6,9 @@
     <div id="title">{{ title || "Rainder" }}</div>
     <!-- 三大金刚键 -->
     <div id="sbcBar" :class="isMac ? 'reverse' : ''">
+      <div title="退出登录">
+        <img src="@/assets/icon/exit.png" @click="exit" />
+      </div>
       <div title="最小化">
         <img src="@/assets/icon/mini.png" @click="op('minApp')" />
       </div>
@@ -18,7 +21,10 @@
 
 <script setup>
 import { defineProps, ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import { ipcRenderer } from "electron";
+import { ElMessage } from "element-plus";
+const router = useRouter();
 defineProps({
   title: String,
 });
@@ -33,6 +39,14 @@ onMounted(async () => {
 
 function op(msg) {
   ipcRenderer.send(msg, msg);
+}
+function exit() {
+  ElMessage({
+    message: "退出登陆成功",
+    type: "success",
+  });
+  localStorage.removeItem("token");
+  router.push("/login");
 }
 </script>
 
@@ -85,7 +99,7 @@ function op(msg) {
 .reverse {
   flex-direction: row-reverse;
 }
-img{
+img {
   -webkit-user-drag: none;
 }
 </style>

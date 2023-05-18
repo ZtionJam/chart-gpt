@@ -72,7 +72,7 @@
               text-align: center;
               font-size: 12px;
             "
-          >仅学习使用，请勿用于商业用途</div>
+          >仅学习使用，一切解释权归作者所有</div>
         </div>
       </div>
     </div>
@@ -198,10 +198,10 @@ const submit = () => {
   });
 };
 onMounted(() => {
-  ElMessage({
-    message: "请先登录~",
-    type: "warning"
-  });
+  // ElMessage({
+  //   message: "请先登录~",
+  //   type: "warning"
+  // });
 });
 </script>
 
