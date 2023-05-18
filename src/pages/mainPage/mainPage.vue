@@ -238,6 +238,7 @@ const send = () => {
   });
 };
 let clearVisible = ref(false);
+//清除
 const clearNow = () => {
   clear().then((ret) => {
     if (ret.status == 200) {
@@ -247,6 +248,7 @@ const clearNow = () => {
           msgs.value = {};
           elm.type = "success";
           elm.message = "清除成功";
+          window.history.go(0);
         }
         ElMessage(elm);
       });
