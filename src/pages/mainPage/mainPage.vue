@@ -2,12 +2,8 @@
   <div>
     <top-frame :title="title" style="height: 30px" />
     <div class="msgBox" id="msgBox">
-      <div class="defaultMsg" v-if="msgs.length==0">
-        <el-image
-          style="width: 200px; height: 200px"
-          :src="gptLogo"
-          :fit="fit"
-        />
+      <div class="defaultMsg" v-if="msgs.length == 0">
+        <el-image style="width: 200px; height: 200px" :src="gptLogo" :fit="fit" />
         <br />
         <div style="text-align: center">柴特GPT</div>
         <div style="text-align: center; font-size: 14px; font-weight: 399">
@@ -16,98 +12,39 @@
       </div>
       <messageCard v-for="(data, key) in msgs" :key="key" :msg="data" />
     </div>
-    <el-button
-      @click="clearVisible = true"
-      color="#10A37F"
-      title="清除记录"
-      class="clearBtn"
-      type="success"
-      :icon="DeleteFilled"
-      circle
-    />
-    <el-input
-      @keyup.enter="quickSend"
-      v-model="question"
-      :autosize="{ minRows: 2, maxRows: 4 }"
-      type="textarea"
-      placeholder="输入你的问题，Shift+Enter快捷发送"
-      class="input"
-      v-loading="sending"
-      element-loading-text="思考中..."
-      element-loading-background="rgba(255, 255, 255, 0.8)"
-    />
-    <el-button
-      @click="send"
-      color="#10A37F"
-      class="send"
-      :icon="Promotion"
-      circle
-    />
-    <el-dialog
-      class="newVersionDialog"
-      v-model="dialogData.centerDialogVisible"
-      :title="dialogData.dialogTitle"
-      width="30%"
-      align-center
-      :modal="false"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      :show-close="!dialogData.isForced"
-    >
+    <el-button @click="clearVisible = true" color="#10A37F" title="清除记录" class="clearBtn" type="success"
+      :icon="DeleteFilled" circle />
+    <el-input @keyup.enter="quickSend" v-model="question" :autosize="{ minRows: 2, maxRows: 4 }" type="textarea"
+      placeholder="输入你的问题，Shift+Enter快捷发送" class="input" v-loading="sending" element-loading-text="思考中..."
+      element-loading-background="rgba(255, 255, 255, 0.8)" />
+    <el-button @click="sendStream" color="#10A37F" class="send" :icon="Promotion" circle />
+    <el-dialog class="newVersionDialog" v-model="dialogData.centerDialogVisible" :title="dialogData.dialogTitle"
+      width="30%" align-center :modal="false" :close-on-click-modal="false" :close-on-press-escape="false"
+      :show-close="!dialogData.isForced">
       <span>
         <span v-show="dialogData.isShowContent">
-          {{ dialogData.introduce }}</span
-        >
-        <el-progress
-          :text-inside="true"
-          :stroke-width="24"
-          :percentage="progress.percent"
-          status="success"
-          v-show="dialogData.isShowProgress"
-        />
+          {{ dialogData.introduce }}</span>
+        <el-progress :text-inside="true" :stroke-width="24" :percentage="progress.percent" status="success"
+          v-show="dialogData.isShowProgress" />
       </span>
       <template #footer>
         <span class="dialog-footer">
-          <el-button
-            v-if="!dialogData.isForced"
-            @click="dialogData.centerDialogVisible = false"
-            >取消</el-button
-          >
+          <el-button v-if="!dialogData.isForced" @click="dialogData.centerDialogVisible = false">取消</el-button>
           <el-button v-if="dialogData.isForced" @click="close">退出</el-button>
-          <el-button
-            v-show="!dialogData.isInstall"
-            color="#10a37f"
-            type="primary"
-            @click="update"
-          >
+          <el-button v-show="!dialogData.isInstall" color="#10a37f" type="primary" @click="update">
             立即更新
           </el-button>
-          <el-button
-            v-show="dialogData.isInstall"
-            color="#10a37f"
-            type="primary"
-            @click="installNow"
-            :disabled="!dialogData.canInstall"
-          >
+          <el-button v-show="dialogData.isInstall" color="#10a37f" type="primary" @click="installNow"
+            :disabled="!dialogData.canInstall">
             立即安装
           </el-button>
         </span>
       </template>
     </el-dialog>
 
-    <el-dialog
-      v-model="clearVisible"
-      title="清除消息记录"
-      width="30%"
-      align-center
-      :modal="false"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      class="clearDialog"
-    >
-      <span
-        >确定清除记录吗？AI会根据消息记录回复你的问题，清除消息记录有助于提高AI的响应速度，当AI回复不全时，清除即可解决。</span
-      >
+    <el-dialog v-model="clearVisible" title="清除消息记录" width="30%" align-center :modal="false" :close-on-click-modal="false"
+      :close-on-press-escape="false" class="clearDialog">
+      <span>确定清除记录吗？AI会根据消息记录回复你的问题，清除消息记录有助于提高AI的响应速度，当AI回复不全时，清除即可解决。</span>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="clearVisible = false">取消</el-button>
@@ -127,8 +64,9 @@ import gptLogo from "@/assets/img/chatgpt_logo.png";
 import { Promotion, DeleteFilled } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
-import { messages, exception, sendMsg, clear } from "@/api";
+import { messages, exception, sendMsg, clear, sendMsgStream } from "@/api";
 import { ipcRenderer } from "electron";
+import fetch from 'electron-fetch'
 const router = useRouter();
 const toBottom = () => {
   nextTick(() => {
@@ -190,8 +128,43 @@ const quickSend = (e) => {
     send();
   }
 };
-//发送消息
-const send = () => {
+//流式消息
+const sendStream = () => {
+  setSending()
+  let msg = {
+    content: question.value,
+    role: "user",
+  };
+  question.value = "";
+  msgs.value.push(msg);
+  toBottom();
+  let content = ref('')
+  let card = {
+    role: "assistant",
+    content: content
+  }
+  msgs.value.push(card);
+  sendMsgStream(msg, (data) => {
+    if (data.indexOf("[DONE]") > -1) {
+      sending.value = false;
+      return
+    }
+    data = parseSSEData(data)
+    card.content.value += data
+    toBottom();
+  });
+
+}
+function parseSSEData(line) {
+  let data = '';
+  data = line.replaceAll('data:', "")
+  data = data.replace(/^\n/, "").replace(/^\n/, "")
+    .replace(/\r\n$/, '').replace(/\r\n$/, '')
+    .replace(/\n$/, '').replace(/\n$/, '');
+  console.log(data)
+  return data;
+}
+const setSending = () => {
   if (sending.value) {
     ElMessage({
       message: "思考中....",
@@ -207,6 +180,10 @@ const send = () => {
     return;
   }
   sending.value = true;
+}
+//发送消息
+const send = () => {
+  setSending()
   let msg = {
     content: question.value,
     role: "user",
@@ -327,15 +304,18 @@ const installNow = () => {
   bottom: 35px;
   left: 20px;
 }
+
 .newVersionDialog {
   border-radius: 10px;
   width: 350px;
   box-shadow: 0 0px 10px rgba(11, 11, 11, 0.3);
 }
+
 ::-webkit-scrollbar {
   width: 0px;
   background-color: #f5f5f5;
 }
+
 .msgBox {
   height: 554px;
   margin: 0px auto;
@@ -345,6 +325,7 @@ const installNow = () => {
   border-bottom-right-radius: 10px;
   padding-bottom: 0;
 }
+
 .send {
   width: 40px;
   height: 40px;
@@ -352,6 +333,7 @@ const installNow = () => {
   bottom: 35px;
   right: 20px;
 }
+
 .input {
   width: 80%;
   position: fixed;
@@ -361,23 +343,28 @@ const installNow = () => {
   border-radius: 10px;
   z-index: 999;
 }
+
 textarea {
   overflow: hidden;
   resize: none !important;
   border-radius: 10px;
 }
+
 .input textarea {
   border-radius: 10px;
 }
+
 #app div div .el-loading-mask {
   border-radius: 10px;
   opacity: 0.8;
 }
+
 .clearDialog {
   width: 400px;
   box-shadow: 0 0px 10px rgba(11, 11, 11, 0.3);
   user-select: none;
 }
+
 .defaultMsg {
   width: 200px;
   font-size: 20px;

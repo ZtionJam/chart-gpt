@@ -1,7 +1,8 @@
 import fetch from 'electron-fetch'
+import nf from 'node-fetch'
 import { ElMessage } from "element-plus";
-const url = 'http://gpt.ztion.cn/api';
-// const url = 'http://127.0.0.1:8081';
+// const url = 'http://gpt.ztion.cn/api';
+const url = 'http://127.0.0.1:8081';
 
 const headers = {
     'Content-Type': 'application/json',
@@ -47,6 +48,30 @@ const sendMsg = async (data) => {
         headers: headers
     })
 }
+// 发送流式消息
+const sendMsgStream = async (data,call) => {
+    headers.Authorization = localStorage.getItem('token')
+    await nf(url + '/app/ai/sendStream', {
+        method: 'post',
+        body: JSON.stringify(data),
+        cache: "no-cache",
+        keepalive: true,
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "text/event-stream",
+            ...headers
+        }
+    }).then(async response => {
+        const reader = response.body.getReader()
+        for (; ;) {
+            const { value, done } = await reader.read();
+            let text=new TextDecoder('utf-8').decode(value);
+            // text=text.replace("\"","").replace("\"","").replace("“","").replace("”","");
+            call(text)
+            if (done) break;
+        }
+    })
+}
 // 清除消息
 const clear = async (data) => {
     headers.Authorization = localStorage.getItem('token')
@@ -82,4 +107,4 @@ const exception = (res) => {
 
 }
 
-export { exception, login, messages, sendMsg, clear,register,sendCode };
+export { exception, login, messages, sendMsg, clear, register, sendCode, sendMsgStream };
