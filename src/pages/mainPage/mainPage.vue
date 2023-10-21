@@ -6,49 +6,88 @@
         <el-image style="width: 200px; height: 200px" :src="gptLogo" :fit="fit" />
         <br />
         <div style="text-align: center">柴特GPT</div>
-        <div style="text-align: center; font-size: 14px; font-weight: 399">
-          速速咱们的开始对话吧~
-        </div>
+        <div style="text-align: center; font-size: 14px; font-weight: 399">速速咱们的开始对话吧~</div>
       </div>
       <messageCard v-for="(data, key) in msgs" :key="key" :msg="data" />
     </div>
-    <el-button @click="clearVisible = true" color="#10A37F" title="清除记录" class="clearBtn" type="success"
-      :icon="DeleteFilled" circle />
-    <el-input @keyup.enter="quickSend" v-model="question" :autosize="{ minRows: 2, maxRows: 4 }" type="textarea"
-      placeholder="输入你的问题，Shift+Enter快捷发送" class="input" v-loading="sending" element-loading-text="思考中..."
-      element-loading-background="rgba(255, 255, 255, 0.8)" />
+    <el-button
+      @click="clearVisible = true"
+      color="#10A37F"
+      title="清除记录"
+      class="clearBtn"
+      type="success"
+      :icon="DeleteFilled"
+      circle
+    />
+    <el-input
+      @keyup.enter="quickSend"
+      v-model="question"
+      :autosize="{ minRows: 2, maxRows: 4 }"
+      type="textarea"
+      placeholder="输入你的问题，Shift+Enter快捷发送"
+      class="input"
+      v-loading="sending"
+      element-loading-text="思考中..."
+      element-loading-background="rgba(255, 255, 255, 0.8)"
+    />
     <el-button @click="sendStream" color="#10A37F" class="send" :icon="Promotion" circle />
-    <el-dialog class="newVersionDialog" v-model="dialogData.centerDialogVisible" :title="dialogData.dialogTitle"
-      width="30%" align-center :modal="false" :close-on-click-modal="false" :close-on-press-escape="false"
-      :show-close="!dialogData.isForced">
+    <el-dialog
+      class="newVersionDialog"
+      v-model="dialogData.centerDialogVisible"
+      :title="dialogData.dialogTitle"
+      width="30%"
+      align-center
+      :modal="false"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :show-close="!dialogData.isForced"
+    >
       <span>
-        <span v-show="dialogData.isShowContent">
-          {{ dialogData.introduce }}</span>
-        <el-progress :text-inside="true" :stroke-width="24" :percentage="progress.percent" status="success"
-          v-show="dialogData.isShowProgress" />
+        <span v-show="dialogData.isShowContent">{{ dialogData.introduce }}</span>
+        <el-progress
+          :text-inside="true"
+          :stroke-width="24"
+          :percentage="progress.percent"
+          status="success"
+          v-show="dialogData.isShowProgress"
+        />
       </span>
       <template #footer>
         <span class="dialog-footer">
           <el-button v-if="!dialogData.isForced" @click="dialogData.centerDialogVisible = false">取消</el-button>
           <el-button v-if="dialogData.isForced" @click="close">退出</el-button>
-          <el-button v-show="!dialogData.isInstall" color="#10a37f" type="primary" @click="update">
-            立即更新
-          </el-button>
-          <el-button v-show="dialogData.isInstall" color="#10a37f" type="primary" @click="installNow"
-            :disabled="!dialogData.canInstall">
-            立即安装
-          </el-button>
+          <el-button
+            v-show="!dialogData.isInstall"
+            color="#10a37f"
+            type="primary"
+            @click="update"
+          >立即更新</el-button>
+          <el-button
+            v-show="dialogData.isInstall"
+            color="#10a37f"
+            type="primary"
+            @click="installNow"
+            :disabled="!dialogData.canInstall"
+          >立即安装</el-button>
         </span>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="clearVisible" title="清除消息记录" width="30%" align-center :modal="false" :close-on-click-modal="false"
-      :close-on-press-escape="false" class="clearDialog">
+    <el-dialog
+      v-model="clearVisible"
+      title="清除消息记录"
+      width="30%"
+      align-center
+      :modal="false"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      class="clearDialog"
+    >
       <span>确定清除记录吗？AI会根据消息记录回复你的问题，清除消息记录有助于提高AI的响应速度，当AI回复不全时，清除即可解决。</span>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="clearVisible = false">取消</el-button>
-          <el-button type="primary" @click="clearNow"> 确认 </el-button>
+          <el-button type="primary" @click="clearNow">确认</el-button>
         </span>
       </template>
     </el-dialog>
@@ -66,7 +105,7 @@ import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
 import { messages, exception, sendMsg, clear, sendMsgStream } from "@/api";
 import { ipcRenderer } from "electron";
-import fetch from 'electron-fetch'
+import fetch from "electron-fetch";
 const router = useRouter();
 const toBottom = () => {
   nextTick(() => {
@@ -89,7 +128,7 @@ let dialogData = ref({
   introduce: "发现新版本了",
   isInstall: false,
   isShowProgress: false,
-  canInstall: false,
+  canInstall: false
 });
 let msgs = ref([]);
 onMounted(() => {
@@ -101,16 +140,16 @@ onMounted(() => {
     router.push("/login");
   } else {
     //加载历史消息
-    messages().then((res) => {
+    messages().then(res => {
       if (200 == res.status) {
-        res.json().then((json) => {
+        res.json().then(json => {
           if (0 == json.code) {
             msgs.value = json.data;
             toBottom();
           } else {
             ElMessage({
               message: json.msg,
-              type: "error",
+              type: "error"
             });
             if (401 == json.code) {
               router.push("/login");
@@ -123,77 +162,87 @@ onMounted(() => {
     });
   }
 });
-const quickSend = (e) => {
+const quickSend = e => {
   if (e.shiftKey === true && e.key === "Enter") {
-    send();
+    sendStream();
   }
 };
 //流式消息
 const sendStream = () => {
-  setSending()
+  setSending();
   let msg = {
     content: question.value,
-    role: "user",
+    role: "user"
   };
   question.value = "";
   msgs.value.push(msg);
   toBottom();
-  let content = ref('')
+  let content = ref("");
   let card = {
     role: "assistant",
     content: content
-  }
+  };
   msgs.value.push(card);
-  sendMsgStream(msg, (data) => {
+  sendMsgStream(msg, data => {
     if (data.indexOf("[DONE]") > -1) {
       sending.value = false;
-      return
+      return;
     }
-    data = parseSSEData(data)
-    card.content.value += data
+    data = parseSSEData(data);
+    card.content.value += data;
     toBottom();
   });
-
-}
+};
 function parseSSEData(line) {
-  let data = '';
-  data = line.replaceAll('data:', "")
-  data = data.replace(/^\n/, "").replace(/^\n/, "")
-    .replace(/\r\n$/, '').replace(/\r\n$/, '')
-    .replace(/\n$/, '').replace(/\n$/, '');
-  console.log(data)
+  let data = "";
+  let arr = line.split("data:");
+  console.log(arr);
+  if (arr.length > 1) {
+    for (let index = 1; index < arr.length; index++) {
+      if (arr[index].endsWith("\n\n")) {
+        data += arr[index].substr(0, arr[index].lastIndexOf("\n\n"));
+      } else {
+        data += arr[index];
+      }
+    }
+  } else {
+    for (let index = 1; index < arr.length; index++) {
+      data += arr[index].substr(0, arr[index].lastIndexOf("\n\n"));
+    }
+  }
+
   return data;
 }
 const setSending = () => {
   if (sending.value) {
     ElMessage({
       message: "思考中....",
-      type: "warning",
+      type: "warning"
     });
     return;
   }
   if (question.value.trim().length < 1) {
     ElMessage({
       message: "说点什么吧~",
-      type: "warning",
+      type: "warning"
     });
     return;
   }
   sending.value = true;
-}
+};
 //发送消息
 const send = () => {
-  setSending()
+  setSending();
   let msg = {
     content: question.value,
-    role: "user",
+    role: "user"
   };
   question.value = "";
   msgs.value.push(msg);
   toBottom();
-  sendMsg(msg).then((res) => {
+  sendMsg(msg).then(res => {
     if (200 == res.status) {
-      res.json().then((json) => {
+      res.json().then(json => {
         sending.value = false;
         console.log(json);
         if (0 == json.code) {
@@ -202,7 +251,7 @@ const send = () => {
         } else {
           ElMessage({
             message: json.msg,
-            type: "error",
+            type: "error"
           });
           if (401 == json.code) {
             router.push("/login");
@@ -217,9 +266,9 @@ const send = () => {
 let clearVisible = ref(false);
 //清除
 const clearNow = () => {
-  clear().then((ret) => {
+  clear().then(ret => {
     if (ret.status == 200) {
-      ret.json().then((json) => {
+      ret.json().then(json => {
         let elm = { message: json.msg, type: "error" };
         if (0 == json.code) {
           msgs.value = {};
@@ -248,7 +297,7 @@ ipcRenderer.on("update-available", (e, info) => {
   dialogData.value.centerDialogVisible = true;
   ElMessage({
     message: "发现新版本",
-    type: "warning",
+    type: "warning"
   });
 });
 //来自主线程的通知，方便调试
@@ -266,7 +315,7 @@ const update = () => {
     introduce: "",
     isInstall: true,
     isShowProgress: true,
-    canInstall: false,
+    canInstall: false
   };
 };
 //下载进度
@@ -275,7 +324,7 @@ let progress = ref({
   delta: 0,
   percent: 1,
   total: 0,
-  transferred: 0,
+  transferred: 0
 });
 ipcRenderer.on("download-progress", (e, progressNow) => {
   progress.value.percent = Math.round(progressNow.percent);
@@ -287,7 +336,7 @@ ipcRenderer.on("update-downloaded", () => {
   dialogData.value.canInstall = true;
   ElMessage({
     message: "更新下载完成~",
-    type: "success",
+    type: "success"
   });
 });
 //立即安装事件

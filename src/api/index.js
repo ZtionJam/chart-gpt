@@ -5,7 +5,7 @@ import { ElMessage } from "element-plus";
 const url = 'http://127.0.0.1:8081';
 
 const headers = {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json'
 }
 // 登录
 const login = async (data) => {
