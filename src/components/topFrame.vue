@@ -3,7 +3,30 @@
     <!-- 操作栏 -->
     <div id="opBar"></div>
     <!-- 标题 -->
-    <div id="title">{{ title || "Rainder" }}</div>
+    <div id="title">
+      <div class="titleStr">{{ title || "Rainder" }}</div>
+      <div id="model" v-if="showModel">
+        <el-dropdown size="small">
+          <el-button class="modelBtn" type="primary">
+            {{ nowModel.name }}
+            <el-icon class="el-icon--right">
+              <arrow-down />
+            </el-icon>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu class="modelMenu">
+              <el-dropdown-item
+                class="modelList"
+                v-for="(item,key) in models"
+                :key="key"
+                :title="item.detail"
+                @click="choooseModel(item)"
+              >{{ item.name }}</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </div>
+    </div>
     <!-- 三大金刚键 -->
     <div id="sbcBar" :class="isMac ? 'reverse' : ''">
       <div title="退出登录">
@@ -20,13 +43,18 @@
 </template>
 
 <script setup>
-import { defineProps, ref, onMounted } from "vue";
+import { defineProps, ref, onMounted, defineEmits } from "vue";
 import { useRouter } from "vue-router";
 import { ipcRenderer } from "electron";
 import { ElMessage } from "element-plus";
+import { ArrowDown } from "@element-plus/icons-vue";
 const router = useRouter();
-defineProps({
+const emit = defineEmits(["choooseModel"]);
+const props = defineProps({
   title: String,
+  showModel: Boolean,
+  models: Array,
+  nowModel: Object
 });
 let isMac = ref(true);
 //获取系统类型 控制金刚键位置
@@ -36,14 +64,16 @@ onMounted(async () => {
     isMac.value = process == "darwin";
   });
 });
-
+function choooseModel(item) {
+  emit("choooseModel", item);
+}
 function op(msg) {
   ipcRenderer.send(msg, msg);
 }
 function exit() {
   ElMessage({
     message: "退出登陆成功",
-    type: "success",
+    type: "success"
   });
   localStorage.removeItem("token");
   router.push("/login");
@@ -51,9 +81,29 @@ function exit() {
 </script>
 
 <style>
+/* .modelMenu{
+  width: 200px;
+} */
+/* .modelList{
+  height: 50px;
+}  */
+.modelBtn {
+  width: 110px;
+  height: 20px;
+  font-size: 10px;
+}
+.titleStr {
+  float: left;
+  -webkit-app-region: drag;
+}
+#model {
+  float: left;
+  margin-left: 5px;
+  margin-top: 5px;
+}
 #opBar {
   height: 30px;
-  width: 100px;
+  width: 300px;
 }
 #sbcBar {
   height: 30px;
@@ -78,7 +128,6 @@ function exit() {
 #title {
   height: 30px;
   width: 400px;
-  -webkit-app-region: drag;
   text-align: center;
   line-height: 30px;
   font-size: 14px;

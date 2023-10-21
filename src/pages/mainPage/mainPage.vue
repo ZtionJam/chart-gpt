@@ -1,9 +1,16 @@
 <template>
   <div>
-    <top-frame :title="title" style="height: 30px" />
+    <top-frame
+      :title="title"
+      :show-model="true"
+      :models="models"
+      style="height: 30px"
+      @choooseModel="choooseModel"
+      :now-model="nowModel"
+    />
     <div class="msgBox" id="msgBox">
       <div class="defaultMsg" v-if="msgs.length == 0">
-        <el-image style="width: 200px; height: 200px" :src="gptLogo" :fit="fit" />
+        <el-image style="width: 200px; height: 200px" :src="gptLogo" />
         <br />
         <div style="text-align: center">柴特GPT</div>
         <div style="text-align: center; font-size: 14px; font-weight: 399">速速咱们的开始对话吧~</div>
@@ -103,7 +110,14 @@ import gptLogo from "@/assets/img/chatgpt_logo.png";
 import { Promotion, DeleteFilled } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
-import { messages, exception, sendMsg, clear, sendMsgStream } from "@/api";
+import {
+  modelList,
+  exception,
+  sendMsg,
+  clear,
+  sendMsgStream,
+  modelChat
+} from "@/api";
 import { ipcRenderer } from "electron";
 import fetch from "electron-fetch";
 const router = useRouter();
@@ -113,6 +127,8 @@ const toBottom = () => {
     container.scrollTop = container.scrollHeight;
   });
 };
+//模型列表
+let models = ref([]);
 //标题
 let title = "柴特GPT";
 //问题
@@ -131,35 +147,63 @@ let dialogData = ref({
   canInstall: false
 });
 let msgs = ref([]);
+//选择模型
+let nowModel = ref({
+  name: "请选择模型123"
+});
+const choooseModel = model => {
+  nowModel.value = model;
+  localStorage.setItem("lastModel", nowModel.value.id);
+};
 onMounted(() => {
   //检查更新
   ipcRenderer.send("check-update");
   //检查登录状态
   let user = localStorage.getItem("token");
+
   if (user == null) {
     router.push("/login");
   } else {
-    //加载历史消息
-    messages().then(res => {
-      if (200 == res.status) {
-        res.json().then(json => {
-          if (0 == json.code) {
-            msgs.value = json.data;
-            toBottom();
-          } else {
+    //加载模型列表
+    modelList(
+      ok => {
+        models.value.push(...ok.data);
+        if (models.value.length > 0) {
+          nowModel.value = models.value[0];
+        }
+        //选中上次使用的模型
+        let lastModel = localStorage.getItem("lastModel");
+        if (lastModel) {
+          let last = models.value.filter(m => {
+            return m.id == lastModel;
+          });
+          if (last.length > 0) {
+            nowModel.value = last[0];
+          }
+        }
+        console.log("上次会话的模型：" + nowModel.value.name);
+        //获取会话
+        modelChat(
+          nowModel.value.id,
+          ok => {
+            console.log(ok);
+            //加载消息记录
+          },
+          () => {
             ElMessage({
-              message: json.msg,
+              message: "加载会话失败，请切换模型重试",
               type: "error"
             });
-            if (401 == json.code) {
-              router.push("/login");
-            }
           }
+        );
+      },
+      () => {
+        ElMessage({
+          message: "加载模型列表，请稍后重试",
+          type: "error"
         });
-      } else {
-        exception(res);
       }
-    });
+    );
   }
 });
 const quickSend = e => {
@@ -193,6 +237,7 @@ const sendStream = () => {
     toBottom();
   });
 };
+//转换SSE消息
 function parseSSEData(line) {
   let data = "";
   let arr = line.split("data:");
@@ -423,5 +468,8 @@ textarea {
   top: 100px;
   transform: translate(-50%);
   opacity: 0.4;
+}
+img {
+  -webkit-user-drag: none;
 }
 </style>

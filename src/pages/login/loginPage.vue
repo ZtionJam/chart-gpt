@@ -1,6 +1,6 @@
 <template>
   <div>
-    <top-frame :title="'登录'" style="height: 30px" />
+    <top-frame :title="'登录'" :showModel="false" style="height: 30px" />
     <div class="contentBox">
       <div class="infoBox">
         <div class="logoBox">
@@ -43,7 +43,7 @@
           </el-link>
           <div style="height:30px" v-show="!isSignIn"></div>
           <el-input class="authInput" v-model="form.username" placeholder="账号 / 用户名" />
-          <el-input  v-show="isSignIn" class="authInput" v-model="form.email" placeholder="邮箱" />
+          <el-input v-show="isSignIn" class="authInput" v-model="form.email" placeholder="邮箱" />
           <el-input class="authInput" type="password" v-model="form.password" placeholder="密码" />
           <el-input
             v-show="isSignIn"
@@ -101,108 +101,33 @@ const tagle = () => {
 };
 //发送验证码
 const sendCodeClick = () => {
-  if (form.value.email && form.value.username) {
-    sendCode({
-      username: form.value.username,
-      mail: form.value.email
-    }).then(res => {
-      if (200 == res.status) {
-        res.json().then(json => {
-          if (0 == json.code) {
-            ElMessage({
-              message: json.data,
-              type: "success"
-            });
-          } else {
-            ElMessage({
-              message: json.msg,
-              type: "error"
-            });
-          }
-        });
-      } else {
-        exception(res);
-      }
-    });
-  } else {
-    ElMessage({
-      message: "输入账号和邮箱地址~",
-      type: "warning"
-    });
-  }
+  ElMessage({ message: "暂未开放注册", type: "error" });
 };
 //注册
 const registerClick = () => {
-  if (
-    form.value.username &&
-    form.value.password &&
-    form.value.email &&
-    form.value.code
-  ) {
-    register({
-      username: form.value.username,
-      password: form.value.password,
-      mail: form.value.email,
-      code: form.value.code
-    }).then(res => {
-      if (200 == res.status) {
-        res.json().then(json => {
-          if (0 == json.code) {
-             ElMessage({
-              message: '注册成功',
-              type: "success"
-            });
-            tagle()
-          } else {
-            ElMessage({
-              message: json.msg,
-              type: "error"
-            });
-          }
-        });
-      } else {
-        exception(res);
-      }
-    });
-  } else {
-    ElMessage({
-      message: "输入账号信息~",
-      type: "warning"
-    });
-  }
+  ElMessage({ message: "暂未开放注册", type: "error" });
 };
 //提交
 const submit = () => {
+  //去注册
   if (isSignIn.value) {
     registerClick();
     return;
   }
   loading.value = true;
-  login(form.value).then(res => {
-    res.json().then(json => {
-      if (0 == json.code) {
-        ElMessage({
-          message: "登录成功~",
-          type: "success"
-        });
-        localStorage.setItem("token", json.data.access_token);
-        router.push("/mainPage");
-      } else {
-        ElMessage({
-          message: json.msg,
-          type: "error"
-        });
-      }
+  //登录
+  login(
+    form.value,
+    ok => {
+      ElMessage({ message: "登录成功~", type: "success" });
+      localStorage.setItem("token", ok.data.token);
+      router.push("/mainPage");
+    },
+    () => {
       loading.value = false;
-    });
-  });
+    }
+  );
 };
-onMounted(() => {
-  // ElMessage({
-  //   message: "请先登录~",
-  //   type: "warning"
-  // });
-});
 </script>
 
 <style scoped>
