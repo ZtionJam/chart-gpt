@@ -91,6 +91,7 @@ function exit() {
   width: 110px;
   height: 20px;
   font-size: 10px;
+  overflow: hidden;
 }
 .titleStr {
   float: left;

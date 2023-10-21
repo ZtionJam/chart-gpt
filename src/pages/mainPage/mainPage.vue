@@ -112,6 +112,7 @@ import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
 import {
   modelList,
+  msgList,
   exception,
   sendMsg,
   clear,
@@ -129,6 +130,7 @@ const toBottom = () => {
 };
 //模型列表
 let models = ref([]);
+let chat={};
 //标题
 let title = "柴特GPT";
 //问题
@@ -154,6 +156,7 @@ let nowModel = ref({
 const choooseModel = model => {
   nowModel.value = model;
   localStorage.setItem("lastModel", nowModel.value.id);
+  loadMsg();
 };
 onMounted(() => {
   //检查更新
@@ -182,20 +185,7 @@ onMounted(() => {
           }
         }
         console.log("上次会话的模型：" + nowModel.value.name);
-        //获取会话
-        modelChat(
-          nowModel.value.id,
-          ok => {
-            console.log(ok);
-            //加载消息记录
-          },
-          () => {
-            ElMessage({
-              message: "加载会话失败，请切换模型重试",
-              type: "error"
-            });
-          }
-        );
+        loadMsg();
       },
       () => {
         ElMessage({
@@ -206,6 +196,37 @@ onMounted(() => {
     );
   }
 });
+//获取消息列表
+const loadMsg = () => {
+  //获取会话
+  modelChat(
+    nowModel.value.id,
+    ok => {
+      chat=ok.data;
+      //加载消息记录
+      msgList(
+        ok.data.id,
+        ok => {
+          msgs.value = ok.data;
+          toBottom();
+        },
+        fail => {
+          ElMessage({
+            message: "加载会话失败，请切换模型重试",
+            type: "error"
+          });
+        }
+      );
+    },
+    () => {
+      ElMessage({
+        message: "加载会话失败，请切换模型重试",
+        type: "error"
+      });
+    }
+  );
+};
+
 const quickSend = e => {
   if (e.shiftKey === true && e.key === "Enter") {
     sendStream();
@@ -216,7 +237,8 @@ const sendStream = () => {
   setSending();
   let msg = {
     content: question.value,
-    role: "user"
+    role: "user",
+    chatId:chat.id
   };
   question.value = "";
   msgs.value.push(msg);
@@ -251,7 +273,7 @@ function parseSSEData(line) {
       }
     }
   } else {
-    for (let index = 1; index < arr.length; index++) {
+    for (let index = 0; index < arr.length; index++) {
       data += arr[index].substr(0, arr[index].lastIndexOf("\n\n"));
     }
   }

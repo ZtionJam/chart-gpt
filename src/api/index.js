@@ -7,14 +7,6 @@ const basePath = 'http://127.0.0.1:8208';
 const headers = {
     'Content-Type': 'application/json'
 }
-// 登录
-// const login = async (data) => {
-//     return fetch(url + '/auth/login', {
-//         method: 'post',
-//         body: JSON.stringify(data),
-//         headers: headers
-//     })
-// }
 // 注册
 const register = async (data) => {
     return fetch(basePath + '/app/user/register', {
@@ -51,7 +43,7 @@ const sendMsg = async (data) => {
 // 发送流式消息
 const sendMsgStream = async (data, call) => {
     headers.Authorization = localStorage.getItem('token')
-    await nf(basePath + '/app/ai/sendStream', {
+    await nf(basePath + '/app/chat/talk', {
         method: 'post',
         body: JSON.stringify(data),
         cache: "no-cache",
@@ -66,6 +58,7 @@ const sendMsgStream = async (data, call) => {
         for (; ;) {
             const { value, done } = await reader.read();
             let text = new TextDecoder('utf-8').decode(value);
+            call(text)
             if (done) break;
         }
     })
@@ -89,6 +82,10 @@ const modelList = async (ok, fail) => {
 // 模型列表
 const modelChat = async (data, ok, fail) => {
     GET('/app/chat/modelChat?modelId=' + data, {}, ok, fail);
+}
+// 消息列表
+const msgList = async (data, ok, fail) => {
+    GET('/app/chat/msgList?chatId=' + data, {}, ok, fail);
 }
 
 const GET = (url, data, ok, fail) => {
@@ -151,4 +148,4 @@ const exception = (res) => {
 
 }
 
-export { modelList,modelChat, exception, login, messages, sendMsg, clear, register, sendCode, sendMsgStream };
+export { modelList, modelChat, msgList,exception, login, messages, sendMsg, clear, register, sendCode, sendMsgStream };
