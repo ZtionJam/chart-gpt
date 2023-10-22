@@ -117,7 +117,8 @@ import {
   sendMsg,
   clear,
   sendMsgStream,
-  modelChat
+  modelChat,
+  msgClear
 } from "@/api";
 import { ipcRenderer } from "electron";
 import fetch from "electron-fetch";
@@ -130,7 +131,7 @@ const toBottom = () => {
 };
 //模型列表
 let models = ref([]);
-let chat={};
+let chat = {};
 //标题
 let title = "柴特GPT";
 //问题
@@ -151,7 +152,7 @@ let dialogData = ref({
 let msgs = ref([]);
 //选择模型
 let nowModel = ref({
-  name: "请选择模型123"
+  name: "请选择模型"
 });
 const choooseModel = model => {
   nowModel.value = model;
@@ -202,7 +203,7 @@ const loadMsg = () => {
   modelChat(
     nowModel.value.id,
     ok => {
-      chat=ok.data;
+      chat = ok.data;
       //加载消息记录
       msgList(
         ok.data.id,
@@ -238,7 +239,7 @@ const sendStream = () => {
   let msg = {
     content: question.value,
     role: "user",
-    chatId:chat.id
+    chatId: chat.id
   };
   question.value = "";
   msgs.value.push(msg);
@@ -259,6 +260,7 @@ const sendStream = () => {
     toBottom();
   });
 };
+let lastData = "";
 //转换SSE消息
 function parseSSEData(line) {
   let data = "";
@@ -266,6 +268,7 @@ function parseSSEData(line) {
   console.log(arr);
   if (arr.length > 1) {
     for (let index = 1; index < arr.length; index++) {
+      lastData = arr[index];
       if (arr[index].endsWith("\n\n")) {
         data += arr[index].substr(0, arr[index].lastIndexOf("\n\n"));
       } else {
@@ -274,7 +277,12 @@ function parseSSEData(line) {
     }
   } else {
     for (let index = 0; index < arr.length; index++) {
-      data += arr[index].substr(0, arr[index].lastIndexOf("\n\n"));
+      if (lastData.endsWith("\n\n") && arr[index].endsWith("\n\n")) {
+        data += arr[index];
+      } else {
+        data += arr[index].substr(0, arr[index].lastIndexOf("\n\n"));
+      }
+      lastData = arr[index];
     }
   }
 
@@ -333,22 +341,15 @@ const send = () => {
 let clearVisible = ref(false);
 //清除
 const clearNow = () => {
-  clear().then(ret => {
-    if (ret.status == 200) {
-      ret.json().then(json => {
-        let elm = { message: json.msg, type: "error" };
-        if (0 == json.code) {
-          msgs.value = {};
-          elm.type = "success";
-          elm.message = "清除成功";
-          window.history.go(0);
-        }
-        ElMessage(elm);
-      });
-    } else {
-      exception(ret);
-    }
-  });
+  msgClear(
+    chat.id,
+    ok => {
+      loadMsg();
+      ElMessage({ message: "清理成功~", type: "success" });
+      sending.value = false;
+    },
+    fail => {}
+  );
   clearVisible.value = false;
 };
 let updateInfo = ref({});

@@ -87,6 +87,10 @@ const modelChat = async (data, ok, fail) => {
 const msgList = async (data, ok, fail) => {
     GET('/app/chat/msgList?chatId=' + data, {}, ok, fail);
 }
+// 消息列表清理
+const msgClear = async (data, ok, fail) => {
+    GET('/app/chat/msgClear?chatId=' + data, {}, ok, fail);
+}
 
 const GET = (url, data, ok, fail) => {
     headers.Authorization = localStorage.getItem('token')
@@ -148,4 +152,4 @@ const exception = (res) => {
 
 }
 
-export { modelList, modelChat, msgList,exception, login, messages, sendMsg, clear, register, sendCode, sendMsgStream };
+export { msgClear, modelList, modelChat, msgList, exception, login, messages, sendMsg, clear, register, sendCode, sendMsgStream };
