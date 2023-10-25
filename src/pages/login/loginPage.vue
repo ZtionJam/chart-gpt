@@ -82,7 +82,7 @@
 <script setup>
 import topFrame from "@/components/topFrame.vue";
 import gptLogo from "@/assets/img/chatgpt_logo.png";
-import { login, sendCode, register, exception } from "@/api";
+import { login} from "@/api";
 import { ref, onMounted } from "vue";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";

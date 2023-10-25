@@ -10,9 +10,9 @@
     />
     <div class="msgBox" id="msgBox">
       <div class="defaultMsg" v-if="msgs.length == 0">
-        <el-image style="width: 200px; height: 200px" :src="gptLogo" />
+        <el-image style="width: 200px; height: 200px;border-radius:40px" :src="nowModel.avatar||gptLogo" />
         <br />
-        <div style="text-align: center">柴特GPT</div>
+        <div style="text-align: center">{{ nowModel.name }}</div>
         <div style="text-align: center; font-size: 14px; font-weight: 399">速速咱们的开始对话吧~</div>
       </div>
       <messageCard v-for="(data, key) in msgs" :key="key" :msg="data" />
@@ -113,12 +113,10 @@ import { useRouter } from "vue-router";
 import {
   modelList,
   msgList,
-  exception,
-  sendMsg,
-  clear,
   sendMsgStream,
   modelChat,
-  msgClear
+  msgClear,
+  getMsg
 } from "@/api";
 import { ipcRenderer } from "electron";
 import fetch from "electron-fetch";
@@ -185,7 +183,7 @@ onMounted(() => {
             nowModel.value = last[0];
           }
         }
-        console.log("上次会话的模型：" + nowModel.value.name);
+        console.log(nowModel.value);
         loadMsg();
       },
       () => {
@@ -260,7 +258,6 @@ const sendStream = () => {
     toBottom();
   });
 };
-let lastData = "";
 //转换SSE消息
 function parseSSEData(line) {
   let data = "";
@@ -287,39 +284,7 @@ const setSending = () => {
   }
   sending.value = true;
 };
-//发送消息
-const send = () => {
-  setSending();
-  let msg = {
-    content: question.value,
-    role: "user"
-  };
-  question.value = "";
-  msgs.value.push(msg);
-  toBottom();
-  sendMsg(msg).then(res => {
-    if (200 == res.status) {
-      res.json().then(json => {
-        sending.value = false;
-        console.log(json);
-        if (0 == json.code) {
-          msgs.value.push(...json.data);
-          toBottom();
-        } else {
-          ElMessage({
-            message: json.msg,
-            type: "error"
-          });
-          if (401 == json.code) {
-            router.push("/login");
-          }
-        }
-      });
-    } else {
-      exception(res);
-    }
-  });
-};
+
 let clearVisible = ref(false);
 //清除
 const clearNow = () => {
@@ -422,7 +387,6 @@ const installNow = () => {
   overflow: auto;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
-  padding-bottom: 0;
 }
 
 .send {

@@ -90,7 +90,7 @@ function exit() {
   height: 50px;
 }  */
 .modelBtn {
-  width: 110px;
+  width: 130px;
   height: 20px;
   font-size: 10px;
   overflow: hidden;
