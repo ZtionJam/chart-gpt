@@ -28,15 +28,17 @@
       </div>
     </div>
     <!-- 三大金刚键 -->
-    <div id="sbcBar" :class="isMac ? 'reverse' : ''">
-      <div title="退出登录">
-        <img src="@/assets/icon/exit.png" @click="exit" />
-      </div>
-      <div title="最小化">
-        <img src="@/assets/icon/mini.png" @click="op('minApp')" />
-      </div>
-      <div title="关闭">
-        <img src="@/assets/icon/close.png" @click="op('closeApp')" />
+    <div id="sbcBar">
+      <div :class="isMac ? 'reverse f-left' : 'f-right'">
+        <div title="退出登录">
+          <img src="@/assets/icon/exit.png" @click="exit" />
+        </div>
+        <div title="最小化">
+          <img src="@/assets/icon/mini.png" @click="op('minApp')" />
+        </div>
+        <div title="关闭">
+          <img src="@/assets/icon/close.png" @click="op('closeApp')" />
+        </div>
       </div>
     </div>
   </div>
@@ -104,22 +106,24 @@ function exit() {
 }
 #opBar {
   height: 30px;
-  width: 300px;
+  width: 33%;
 }
 #sbcBar {
   height: 30px;
-  width: 65px;
-  display: flex;
+  width: 33%;
 }
 #sbcBar > div {
+  display: flex;
+}
+#sbcBar > div > div {
   width: 30px;
   height: 30px;
 }
-#sbcBar > div:hover {
+#sbcBar > div > div:hover {
   background-color: #20c89f;
   cursor: pointer;
 }
-#sbcBar > div > img {
+#sbcBar > div > div > img {
   display: block;
   margin: 0px auto;
   margin-top: 6px;
@@ -128,10 +132,12 @@ function exit() {
 }
 #title {
   height: 30px;
-  width: 400px;
+  width: 33%;
   text-align: center;
   line-height: 30px;
   font-size: 14px;
+  display: flex;
+  justify-content: center;
 }
 #frame {
   width: 98vw;
@@ -144,10 +150,18 @@ function exit() {
   justify-content: space-between;
 }
 #frame > div {
-  border-radius: 10px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  overflow: hidden;
 }
 .reverse {
   flex-direction: row-reverse;
+}
+.f-left {
+  float: left;
+}
+.f-right {
+  float: right;
 }
 img {
   -webkit-user-drag: none;
