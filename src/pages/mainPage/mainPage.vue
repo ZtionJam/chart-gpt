@@ -251,7 +251,7 @@ const sendStream = () => {
   };
   msgs.value.push(card);
   sendMsgStream(msg, data => {
-    if (data.indexOf("[DONE]") > -1) {
+    if (data.trim().indexOf("data:[DONE]") == 0) {
       sending.value = false;
       return;
     }
@@ -265,27 +265,9 @@ let lastData = "";
 function parseSSEData(line) {
   let data = "";
   let arr = line.split("data:");
-  console.log(arr);
   if (arr.length > 1) {
-    for (let index = 1; index < arr.length; index++) {
-      lastData = arr[index];
-      if (arr[index].endsWith("\n\n")) {
-        data += arr[index].substr(0, arr[index].lastIndexOf("\n\n"));
-      } else {
-        data += arr[index];
-      }
-    }
-  } else {
-    for (let index = 0; index < arr.length; index++) {
-      if (lastData.endsWith("\n\n") && arr[index].endsWith("\n\n")) {
-        data += arr[index];
-      } else {
-        data += arr[index].substr(0, arr[index].lastIndexOf("\n\n"));
-      }
-      lastData = arr[index];
-    }
+    data += arr[1];
   }
-
   return data;
 }
 const setSending = () => {

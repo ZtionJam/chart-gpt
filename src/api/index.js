@@ -1,7 +1,7 @@
 import fetch from 'electron-fetch'
 import nf from 'node-fetch'
 import { ElMessage } from "element-plus";
-import router  from "@/router/index.js"
+import router from "@/router/index.js"
 // const url = 'http://gpt.ztion.cn/api';
 const basePath = 'http://127.0.0.1:8208';
 
@@ -59,7 +59,11 @@ const sendMsgStream = async (data, call) => {
         for (; ;) {
             const { value, done } = await reader.read();
             let text = new TextDecoder('utf-8').decode(value);
-            call(text)
+            let arr = text.split("[ChartEnd]");
+            for (let index = 0; index < arr.length; index++) {
+                const slice = arr[index];
+                call(slice)
+            }
             if (done) break;
         }
     })
@@ -118,7 +122,7 @@ const request = (fullPath, data, ok, fail) => {
                     ok(json)
                 } else if (json.code == 403) {
                     ElMessage({ message: json.msg, type: "warning" });
-                    router.push({ path: '/login'})
+                    router.push({ path: '/login' })
                 } else {
                     ElMessage({ message: json.msg, type: "error" });
                     fail(json);
