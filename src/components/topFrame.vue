@@ -107,6 +107,7 @@ function exit() {
 #opBar {
   height: 30px;
   width: 33%;
+  -webkit-app-region: drag;
 }
 #sbcBar {
   height: 30px;
