@@ -10,12 +10,15 @@
     />
     <div class="msgBox" id="msgBox">
       <div class="defaultMsg" v-if="msgs.length == 0">
-        <el-image style="width: 200px; height: 200px;border-radius:40px" :src="nowModel.avatar||gptLogo" />
+        <el-image
+          style="width: 200px; height: 200px;border-radius:40px"
+          :src="nowModel.avatar||gptLogo"
+        />
         <br />
         <div style="text-align: center">{{ nowModel.name }}</div>
         <div style="text-align: center; font-size: 14px; font-weight: 399">速速咱们的开始对话吧~</div>
       </div>
-      <messageCard v-for="(data, key) in msgs" :key="key" :msg="data" />
+      <messageCard v-for="(data, key) in msgs" :key="key" :msg="data" :aiAvatar="nowModel.avatar" />
     </div>
     <el-button
       @click="clearVisible = true"
@@ -116,7 +119,7 @@ import {
   sendMsgStream,
   modelChat,
   msgClear,
-  getMsg
+  something
 } from "@/api";
 import { ipcRenderer } from "electron";
 import fetch from "electron-fetch";
@@ -183,7 +186,6 @@ onMounted(() => {
             nowModel.value = last[0];
           }
         }
-        console.log(nowModel.value);
         loadMsg();
       },
       () => {
@@ -233,7 +235,9 @@ const quickSend = e => {
 };
 //流式消息
 const sendStream = () => {
-  setSending();
+  if (!setSending()) {
+    return;
+  }
   let msg = {
     content: question.value,
     role: "user",
@@ -248,14 +252,16 @@ const sendStream = () => {
     content: content
   };
   msgs.value.push(card);
-  sendMsgStream(msg, data => {
-    if (data.trim().indexOf("data:[DONE]") == 0) {
-      sending.value = false;
-      return;
-    }
-    data = parseSSEData(data);
-    card.content.value += data;
-    toBottom();
+  something(ok => {
+    sendMsgStream(msg, data => {
+      if (data.trim().indexOf("data:[DONE]") == 0) {
+        sending.value = false;
+        return;
+      }
+      data = parseSSEData(data);
+      card.content.value += data;
+      toBottom();
+    });
   });
 };
 //转换SSE消息
@@ -273,16 +279,17 @@ const setSending = () => {
       message: "思考中....",
       type: "warning"
     });
-    return;
+    return false;
   }
   if (question.value.trim().length < 1) {
     ElMessage({
       message: "说点什么吧~",
       type: "warning"
     });
-    return;
+    return false;
   }
   sending.value = true;
+  return true;
 };
 
 let clearVisible = ref(false);

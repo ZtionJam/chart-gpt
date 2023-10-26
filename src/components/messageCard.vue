@@ -3,7 +3,7 @@
     <div class="avatarBox">
       <el-avatar
         class="avatar"
-        :src="msg.role == 'assistant' ? gptLogo : ''"
+        :src="msg.role == 'assistant' ? (aiAvatar||gptLogo) : ''"
         :icon="msg.role == 'user' ? UserFilled : ''"
       />
     </div>
@@ -18,7 +18,8 @@ import { UserFilled } from "@element-plus/icons-vue";
 import { defineProps } from "vue";
 import gptLogo from "@/assets/img/chatgpt_logo.png";
 defineProps({
-  msg: Object
+  msg: Object,
+  aiAvatar: String
 });
 </script>
 

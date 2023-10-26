@@ -24,15 +24,26 @@ const sendMsgStream = async (data, call) => {
         }
     }).then(async response => {
         const reader = response.body.getReader()
+        let swap = '';
         for (; ;) {
             const { value, done } = await reader.read();
+            if (done) break;
             let text = new TextDecoder('utf-8').decode(value);
+            //解决在Mac上，读取到的数据不完整问题（读到的数据没有包含在data:[ChartEnd]中间）
+            if (text.indexOf('data:') == -1) {
+                text = swap + text;
+                swap = '';
+            }
+            if (text.indexOf('[ChartEnd]') == -1) {
+                swap = text;
+                continue
+            }
+
             let arr = text.split("[ChartEnd]");
             for (let index = 0; index < arr.length; index++) {
                 const slice = arr[index];
                 call(slice)
             }
-            if (done) break;
         }
     })
 }
@@ -57,8 +68,12 @@ const msgClear = async (data, ok, fail) => {
     GET('/app/chat/msgClear?chatId=' + data, {}, ok, fail);
 }
 // 消息详情
-const getMsg= async (data, ok, fail) => {
+const getMsg = async (data, ok, fail) => {
     GET('/app/chat/msg/' + data, {}, ok, fail);
+}
+// 检查
+const something = async (ok, fail) => {
+    GET('/app/chat/something', {}, ok, fail);
 }
 const GET = (url, data, ok, fail) => {
     headers.Authorization = localStorage.getItem('token')
@@ -80,7 +95,6 @@ const request = (fullPath, data, ok, fail) => {
     fetch(fullPath, data).then(res => {
         if (res.status == 200) {
             res.json().then(json => {
-                console.log(json)
                 if (json.code == 200) {
                     ok(json)
                 } else if (json.code == 403) {
@@ -99,4 +113,4 @@ const request = (fullPath, data, ok, fail) => {
 }
 
 
-export { getMsg,msgClear, modelList, modelChat, msgList, login, sendMsgStream };
+export { something, getMsg, msgClear, modelList, modelChat, msgList, login, sendMsgStream };
