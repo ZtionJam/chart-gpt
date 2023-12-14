@@ -11,14 +11,41 @@
     <div class="msgBox" id="msgBox">
       <div class="defaultMsg" v-if="msgs.length == 0">
         <el-image
-          style="width: 200px; height: 200px;border-radius:40px"
+          style="width: 200px; height: 200px;border-radius:40px;"
           :src="nowModel.avatar||gptLogo"
         />
         <br />
         <div style="text-align: center">{{ nowModel.name }}</div>
         <div style="text-align: center; font-size: 14px; font-weight: 399">速速咱们的开始对话吧~</div>
       </div>
-      <messageCard v-for="(data, key) in msgs" :key="key" :msg="data" :aiAvatar="nowModel.avatar" />
+      <messageCard v-for="(data) in msgs" :key="data.id" :msg="data" :aiAvatar="nowModel.avatar" />
+    </div>
+    <div class="uploadBox" v-if="nowModel.vision">
+      <el-upload
+        title="点击上传图片"
+        action="#"
+        :file-list="fileList"
+        list-type="picture-card"
+        :limit="1"
+        :auto-upload="true"
+        :http-request="uploadImg"
+      >
+        <el-icon>
+          <Plus />
+        </el-icon>
+        <template #file="{ file }">
+          <div>
+            <img class="el-upload-list__item-thumbnail" :src="file.url" alt />
+            <span class="el-upload-list__item-actions">
+              <span class="el-upload-list__item-delete" @click="handleRemove(file)">
+                <el-icon>
+                  <Delete />
+                </el-icon>
+              </span>
+            </span>
+          </div>
+        </template>
+      </el-upload>
     </div>
     <el-button
       @click="clearVisible = true"
@@ -110,7 +137,14 @@ import messageCard from "@/components/messageCard.vue";
 // import clearIcon from "@/assets/img/clear.png";
 import { ref, nextTick, onMounted } from "vue";
 import gptLogo from "@/assets/img/chatgpt_logo.png";
-import { Promotion, DeleteFilled } from "@element-plus/icons-vue";
+import {
+  Promotion,
+  DeleteFilled,
+  Delete,
+  Download,
+  Plus,
+  ZoomIn
+} from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useRouter } from "vue-router";
 import {
@@ -119,9 +153,10 @@ import {
   sendMsgStream,
   modelChat,
   msgClear,
-  something
+  something,
+  upload
 } from "@/api";
-import { ipcRenderer } from "electron";
+import { ipcRenderer, clipboard, nativeImage } from "electron";
 import fetch from "electron-fetch";
 const router = useRouter();
 const toBottom = () => {
@@ -197,6 +232,67 @@ onMounted(() => {
     );
   }
 });
+
+//文件操作
+let fileList = ref([]);
+let imgMessage = {};
+const handleRemove = file => {
+  fileList.value = [];
+  imgMessage = {};
+};
+const uploadImg = file => {
+  upFile(file.file);
+};
+const upFile = file => {
+  sending.value = true;
+  ElMessage({
+    message: "图片上传中....",
+    type: "warning"
+  });
+  console.log(file);
+  upload(
+    file,
+    url => {
+      console.log(url);
+      imgMessage = {
+        type: "image_url",
+        imgUrl: url
+      };
+      ElMessage({ message: "图片上传中成功~", type: "success" });
+      sending.value = false;
+    },
+    () => {
+      sending.value = false;
+      ElMessage({
+        message: "图片上传失败，请稍后重试",
+        type: "error"
+      });
+      fileList.value = [];
+    }
+  );
+};
+//Ctrl+V操作
+document.addEventListener("keydown", event => {
+  if ((event.metaKey || event.ctrlKey) && event.key === "v") {
+    event.preventDefault(); // 阻止默认的粘贴行为
+    const availableFormats = clipboard.availableFormats();
+    if (availableFormats.includes("image/png")) {
+      const image = clipboard.readImage().toPNG();
+      upFile(image);
+    } else if (availableFormats.includes("text/uri-list")) {
+      const filePaths = clipboard.read("text/uri-list");
+      console.log(filePaths);
+      // filePaths.forEach(filePath => {
+      //   if (isImagePath(filePath)) {
+      //     console.log("有图片");
+      //   }
+      // });
+    }
+  }
+});
+function isImagePath(filePath) {
+  return /\.(jpg|jpeg|png|gif|bmp|svg)$/i.test(filePath);
+}
 //获取消息列表
 const loadMsg = () => {
   //获取会话
@@ -239,10 +335,20 @@ const sendStream = () => {
     return;
   }
   let msg = {
-    content: question.value,
+    contents: [
+      {
+        type: "text",
+        text: question.value
+      }
+    ],
     role: "user",
     chatId: chat.id
   };
+  if (imgMessage.type) {
+    msg.contents.push(imgMessage);
+    fileList.value = [];
+  }
+  console.log(msg);
   question.value = "";
   msgs.value.push(msg);
   toBottom();
@@ -295,6 +401,7 @@ const setSending = () => {
 let clearVisible = ref(false);
 //清除
 const clearNow = () => {
+  msgs.value = [];
   msgClear(
     chat.id,
     ok => {
@@ -368,6 +475,36 @@ const installNow = () => {
 </script>
 
 <style>
+.uploadBox .el-upload--picture-card {
+  width: 80px;
+  height: 80px;
+}
+.uploadBox .el-upload {
+  width: 80px;
+  height: 80px;
+  line-height: 80px;
+}
+.uploadBox .el-upload-list--picture-card .el-upload-list__item {
+  width: 80px;
+  height: 80px;
+  line-height: 80px;
+}
+.uploadBox .el-upload-list--picture-card .el-upload-list__item-thumbnail {
+  width: 80px;
+  height: 80px;
+  line-height: 80px;
+}
+
+.uploadBox {
+  opacity: 0.8;
+  width: 160px;
+  height: 80px;
+  position: fixed;
+  bottom: 90px;
+  right: 0px;
+  overflow: hidden;
+  /* border: 1px solid #ccc; */
+}
 .clearBtn {
   width: 40px;
   height: 40px;

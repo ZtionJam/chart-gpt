@@ -2,13 +2,36 @@ import fetch from 'electron-fetch'
 import nf from 'node-fetch'
 import { ElMessage } from "element-plus";
 import router from "@/router/index.js"
-const basePath = 'http://chart.ztion.cn';
-// const basePath = 'http://127.0.0.1:8208';
+// const basePath = 'http://chart.ztion.cn';
+const basePath = 'http://127.0.0.1:8208';
+const fileUploadPath = 'https://res.ztion.cn/file';
 
 const headers = {
     'Content-Type': 'application/json'
 }
-
+//上传文件
+const upload = async (file, ok, fail) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('pass', "123456");
+    let body = {
+        pass: "123456",
+        file: file
+    }
+    await nf(fileUploadPath, {
+        method: 'post',
+        body: formData
+    }).then(async res => {
+        if (res.status == 200) {
+            ok(await res.text())
+        } else {
+            console.log("file upload fail")
+            fail()
+        }
+    }).catch(e=>{
+        fail()
+    });
+}
 // 发送流式消息
 const sendMsgStream = async (data, call) => {
     headers.Authorization = localStorage.getItem('token')
@@ -113,4 +136,4 @@ const request = (fullPath, data, ok, fail) => {
 }
 
 
-export { something, getMsg, msgClear, modelList, modelChat, msgList, login, sendMsgStream };
+export { something, getMsg, msgClear, modelList, modelChat, msgList, login, sendMsgStream, upload };
