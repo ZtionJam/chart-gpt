@@ -28,6 +28,7 @@
         list-type="picture-card"
         :limit="1"
         :auto-upload="true"
+        accept="image/*"
         :http-request="uploadImg"
       >
         <el-icon>
@@ -63,6 +64,7 @@
       type="textarea"
       placeholder="输入你的问题，Shift+Enter快捷发送"
       class="input"
+      id="msgInput"
       v-loading="sending"
       element-loading-text="思考中..."
       element-loading-background="rgba(255, 255, 255, 0.8)"
@@ -158,6 +160,10 @@ import {
 } from "@/api";
 import { ipcRenderer, clipboard, nativeImage } from "electron";
 import fetch from "electron-fetch";
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
+
 const router = useRouter();
 const toBottom = () => {
   nextTick(() => {
@@ -194,6 +200,7 @@ const choooseModel = model => {
   nowModel.value = model;
   localStorage.setItem("lastModel", nowModel.value.id);
   loadMsg();
+  handleRemove();
 };
 onMounted(() => {
   //检查更新
@@ -249,17 +256,26 @@ const upFile = file => {
     message: "图片上传中....",
     type: "warning"
   });
-  console.log(file);
   upload(
     file,
     url => {
-      console.log(url);
       imgMessage = {
         type: "image_url",
         imgUrl: url
       };
-      ElMessage({ message: "图片上传中成功~", type: "success" });
+      ElMessage({ message: "图片上传成功~", type: "success" });
       sending.value = false;
+      const fileObject = {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        uid: file.lastModified + Date.now(),
+        status: "ready",
+        raw: file,
+        url: url
+      };
+      fileList.value = [fileObject];
+      document.getElementById("msgInput").focus();
     },
     () => {
       sending.value = false;
@@ -273,20 +289,21 @@ const upFile = file => {
 };
 //Ctrl+V操作
 document.addEventListener("keydown", event => {
-  if ((event.metaKey || event.ctrlKey) && event.key === "v") {
+  if (
+    nowModel.value.vision &&
+    (event.metaKey || event.ctrlKey) &&
+    event.key === "v"
+  ) {
     event.preventDefault(); // 阻止默认的粘贴行为
     const availableFormats = clipboard.availableFormats();
     if (availableFormats.includes("image/png")) {
       const image = clipboard.readImage().toPNG();
-      upFile(image);
+      const file = new File([image], "uploadTemp.png", {
+        type: "image/png"
+      });
+      upFile(file);
     } else if (availableFormats.includes("text/uri-list")) {
       const filePaths = clipboard.read("text/uri-list");
-      console.log(filePaths);
-      // filePaths.forEach(filePath => {
-      //   if (isImagePath(filePath)) {
-      //     console.log("有图片");
-      //   }
-      // });
     }
   }
 });
@@ -348,7 +365,6 @@ const sendStream = () => {
     msg.contents.push(imgMessage);
     fileList.value = [];
   }
-  console.log(msg);
   question.value = "";
   msgs.value.push(msg);
   toBottom();
@@ -402,6 +418,7 @@ let clearVisible = ref(false);
 //清除
 const clearNow = () => {
   msgs.value = [];
+  fileList.value = [];
   msgClear(
     chat.id,
     ok => {
@@ -493,6 +510,7 @@ const installNow = () => {
   width: 80px;
   height: 80px;
   line-height: 80px;
+  object-fit: cover;
 }
 
 .uploadBox {

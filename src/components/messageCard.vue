@@ -56,8 +56,8 @@ if (prop.msg.role == "user") {
   box-shadow: 0 2px 8px rgba(23, 82, 30, 0.25);
 }
 .msgImg:hover {
-  width: 200px;
-  height: 200px;
+  width: 300px;
+  height: 300px;
   margin-top: -50px;
   margin-left: -50px;
   box-shadow: 0 2px 8px rgba(23, 82, 30, 0.8);
