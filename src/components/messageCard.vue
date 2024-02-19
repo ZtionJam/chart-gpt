@@ -49,23 +49,17 @@ if (prop.msg.role == "user") {
 
 <style>
 .msgImg {
-  width: 100px;
-  height: 100px;
+ max-width: 100%;
+  max-height: 100%;
   transition: all 300ms;
   border-radius: 5px;
   box-shadow: 0 2px 8px rgba(23, 82, 30, 0.25);
 }
 .msgImg:hover {
-  width: 300px;
-  height: 300px;
-  margin-top: -50px;
-  margin-left: -50px;
   box-shadow: 0 2px 8px rgba(23, 82, 30, 0.8);
 }
 .imgBox {
-  widows: 80%;
-  height: 100px;
-  /* border: 1px solid #ccc; */
+  width: 80%;
   margin-top: -40px;
   margin-left: 40px;
 }

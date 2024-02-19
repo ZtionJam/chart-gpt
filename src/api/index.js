@@ -2,8 +2,8 @@ import fetch from 'electron-fetch'
 import nf from 'node-fetch'
 import { ElMessage } from "element-plus";
 import router from "@/router/index.js"
-// const basePath = 'http://chart.ztion.cn';
-const basePath = 'http://127.0.0.1:8208';
+const basePath = 'http://chart.ztion.cn';
+// const basePath = 'http://127.0.0.1:8208';
 const fileUploadPath = 'https://res.ztion.cn/file';
 
 const headers = {
