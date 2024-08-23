@@ -7,8 +7,8 @@
 # 简介
 
 OpenAI,GPT4,GPT3等模型聊天工具，跨平台PC客户端，支持多种OpenAI模型，支持Vision系列，支持图片上传<br/>
-国内无法访问OpenAI,所以有一个后端服务，将后端部署在国外服务器上，即可实现无需FQ使用OpenAI GPT4等模型
-
+国内无法访问OpenAI,所以有一个后端服务，将后端部署在国外服务器上，即可实现无需FQ使用OpenAI GPT4等模型<br/>
+<a href="https://github.com/ZtionJam/chart-server">后端服务在这里</a>
 
 # 截图
 ![image-mark_tie_ex](https://res.ztion.cn/imgs/fixed/gpt_demo.png)
